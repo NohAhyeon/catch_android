@@ -1,8 +1,12 @@
 package com.umc.catchandroid.di
 
+import com.umc.catchandroid.data.repository.MockCalendarRepositoryImpl
 import com.umc.catchandroid.data.repository.MockNoticeRepositoryImpl
+import com.umc.catchandroid.data.repository.MockSearchRepositoryImpl
 import com.umc.catchandroid.data.repository.MockUserRepositoryImpl
+import com.umc.catchandroid.domain.repository.CalendarRepository
 import com.umc.catchandroid.domain.repository.NoticeRepository
+import com.umc.catchandroid.domain.repository.SearchRepository
 import com.umc.catchandroid.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -22,4 +26,14 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         impl: MockUserRepositoryImpl
     ): UserRepository
+
+    @Binds
+    abstract fun bindSearchRepository(
+        impl: MockSearchRepositoryImpl
+    ): SearchRepository
+
+    @Binds
+    abstract fun bindCalendarRepository(
+        impl: MockCalendarRepositoryImpl
+    ): CalendarRepository
 }
