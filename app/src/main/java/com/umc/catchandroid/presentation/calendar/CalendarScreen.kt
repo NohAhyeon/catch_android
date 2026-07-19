@@ -2,11 +2,15 @@ package com.umc.catchandroid.presentation.calendar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -14,101 +18,201 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.umc.catchandroid.presentation.home.NoticeItem
+import com.umc.catchandroid.ui.theme.CatchPrimary
+import com.umc.catchandroid.ui.theme.CatchTextBody
+import com.umc.catchandroid.ui.theme.CatchTextCaption
+import com.umc.catchandroid.ui.theme.CatchTextTitle
+import java.time.YearMonth
+
+private data class CalendarDay(val day: Int, val isCurrentMonth: Boolean, val dateStr: String?)
+private val weekdays = listOf("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa")
 
 @Composable
 fun CalendarScreen(
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
+    val yearMonth by viewModel.yearMonth.collectAsState()
     val deadlineDates by viewModel.deadlineDates.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
     val noticesForDate by viewModel.noticesForDate.collectAsState()
+    val upcomingNotices by viewModel.upcomingNotices.collectAsState()
 
-    // 2026년 7월 기준 (1일이 수요일, 31일까지)
-    val daysInMonth = 31
-    val startOffset = 3 // 수요일 시작이라고 가정 (0=일요일)
+    val calendarDays = remember(yearMonth) { buildCalendarDays(yearMonth) }
+    val selectedDay = selectedDate.substring(8, 10).toIntOrNull() ?: 0
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text(
-            text = "2026년 7월",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 상단 앱바
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            items(startOffset) {
-                Box(modifier = Modifier.aspectRatio(1f))
-            }
-            items(daysInMonth) { index ->
-                val day = index + 1
-                val dateStr = "2026-07-%02d".format(day)
-                val hasDeadline = deadlineDates.contains(dateStr)
-                val isSelected = selectedDate == dateStr
+            Text(
+                text = "캘린더",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = CatchTextTitle,
+                modifier = Modifier.align(Alignment.Center)
+            )
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "알림",
+                tint = CatchPrimary,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
 
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .padding(2.dp)
-                        .clickable { viewModel.onDateSelected(dateStr) }
-                        .background(
-                            color = if (isSelected) MaterialTheme.colorScheme.primary
-                            else androidx.compose.ui.graphics.Color.Transparent,
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+            // 월 이동
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(onClick = { viewModel.prevMonth() }) {
+                        Icon(Icons.Default.ChevronLeft, contentDescription = "이전 달", tint = CatchTextBody)
+                    }
+                    Text(
+                        text = "${yearMonth.year}년 ${yearMonth.monthValue}월",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = CatchTextTitle,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    IconButton(onClick = { viewModel.nextMonth() }) {
+                        Icon(Icons.Default.ChevronRight, contentDescription = "다음 달", tint = CatchTextBody)
+                    }
+                }
+            }
+
+            // 요일 헤더
+            item {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    weekdays.forEach { day ->
                         Text(
-                            text = day.toString(),
+                            text = day,
+                            fontSize = 13.sp,
                             textAlign = TextAlign.Center,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.onSurface
+                            color = if (day == "Su") Color(0xFFE05353) else CatchTextCaption,
+                            modifier = Modifier.weight(1f)
                         )
-                        if (hasDeadline) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(top = 2.dp)
-                                    .aspectRatio(1f)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.error,
-                                        shape = CircleShape
-                                    )
-                            )
+                    }
+                }
+            }
+
+            // 날짜 그리드
+            item {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(7),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((((calendarDays.size / 7) * 56)).dp)
+                ) {
+                    items(calendarDays) { calDay ->
+                        val isSelected = calDay.isCurrentMonth && calDay.day == selectedDay
+                        val hasDeadline = calDay.dateStr != null && deadlineDates.contains(calDay.dateStr)
+
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .padding(4.dp)
+                                .clickable(enabled = calDay.dateStr != null) {
+                                    calDay.dateStr?.let { viewModel.onDateSelected(it) }
+                                }
+                                .background(
+                                    color = if (isSelected) CatchPrimary else Color.Transparent,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = calDay.day.toString(),
+                                    fontSize = 15.sp,
+                                    color = when {
+                                        isSelected -> Color.White
+                                        !calDay.isCurrentMonth -> CatchTextCaption.copy(alpha = 0.4f)
+                                        else -> CatchTextTitle
+                                    }
+                                )
+                            }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(20.dp))
             }
-        }
 
-        Text(
-            text = "마감 공지",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-        )
-
-        LazyColumn {
+            // 선택 날짜 일정
+            item {
+                Text(
+                    text = "📅 ${yearMonth.monthValue}월 ${selectedDay}일 일정 ${noticesForDate.size}개",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = CatchTextTitle,
+                    modifier = Modifier.padding(bottom = 10.dp)
+                )
+            }
             items(noticesForDate) { notice ->
-                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(text = notice.categoryTag)
-                        Text(text = notice.title)
-                        Text(text = notice.source)
-                    }
-                }
+                NoticeItem(notice = notice, onClick = {})
+                Spacer(modifier = Modifier.height(10.dp))
             }
+
+            // 다가오는 일정
+            item {
+                Text(
+                    text = "🕐 다가오는 일정 ${upcomingNotices.size}개",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = CatchTextTitle,
+                    modifier = Modifier.padding(top = 12.dp, bottom = 10.dp)
+                )
+            }
+            items(upcomingNotices) { notice ->
+                NoticeItem(notice = notice, onClick = {})
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
+}
+
+private fun buildCalendarDays(yearMonth: YearMonth): List<CalendarDay> {
+    val days = mutableListOf<CalendarDay>()
+    val firstDay = yearMonth.atDay(1)
+    val startOffset = firstDay.dayOfWeek.value % 7 // 일=0 ~ 토=6
+    val prevMonth = yearMonth.minusMonths(1)
+    val prevLength = prevMonth.lengthOfMonth()
+
+    for (i in startOffset downTo 1) {
+        days.add(CalendarDay(prevLength - i + 1, false, null))
+    }
+    for (d in 1..yearMonth.lengthOfMonth()) {
+        val dateStr = "%04d-%02d-%02d".format(yearMonth.year, yearMonth.monthValue, d)
+        days.add(CalendarDay(d, true, dateStr))
+    }
+    val remaining = (7 - days.size % 7) % 7
+    for (d in 1..remaining) {
+        days.add(CalendarDay(d, false, null))
+    }
+    return days
 }

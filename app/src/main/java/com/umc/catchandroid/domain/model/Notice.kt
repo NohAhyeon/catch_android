@@ -6,5 +6,6 @@ data class Notice(
     val title: String,
     val source: String,
     val createdAt: String,
-    val deadlineAt: String?
+    val deadlineAt: String?,
+    val isRead: Boolean = false
 )

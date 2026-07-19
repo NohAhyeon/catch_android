@@ -22,13 +22,29 @@ class SearchViewModel @Inject constructor(
     private val _results = MutableStateFlow<List<Notice>>(emptyList())
     val results: StateFlow<List<Notice>> = _results.asStateFlow()
 
+    private val _recentSearches = MutableStateFlow(listOf("국가장학금", "교환학생", "근로장학"))
+    val recentSearches: StateFlow<List<String>> = _recentSearches.asStateFlow()
+
     fun onKeywordChange(newKeyword: String) {
         _keyword.value = newKeyword
     }
 
-    fun search() {
-        viewModelScope.launch {
-            _results.value = searchRepository.searchNotices(_keyword.value)
+    fun search(query: String = _keyword.value) {
+        if (query.isBlank()) return
+        _keyword.value = query
+        if (!_recentSearches.value.contains(query)) {
+            _recentSearches.value = listOf(query) + _recentSearches.value
         }
+        viewModelScope.launch {
+            _results.value = searchRepository.searchNotices(query)
+        }
+    }
+
+    fun removeRecentSearch(query: String) {
+        _recentSearches.value = _recentSearches.value - query
+    }
+
+    fun clearRecentSearches() {
+        _recentSearches.value = emptyList()
     }
 }

@@ -11,32 +11,48 @@ class MockSearchRepositoryImpl @Inject constructor() : SearchRepository {
         Notice(
             noticeId = 10,
             categoryTag = "장학",
-            title = "2026학년도 2학기 국가장학금 신청 안내",
+            title = "국가장학금 신청 안내",
             source = "학생복지처",
-            createdAt = "2026-07-01T09:00:00",
-            deadlineAt = "2026-07-10T23:59:59"
+            createdAt = "2026-07-13T04:00:00",
+            deadlineAt = "2026-07-22T18:00:00"
         ),
         Notice(
             noticeId = 11,
-            categoryTag = "취업",
-            title = "교내 창업경진대회 참가자 모집",
-            source = "창업지원단",
-            createdAt = "2026-07-02T10:00:00",
-            deadlineAt = "2026-07-20T18:00:00"
+            categoryTag = "교내",
+            title = "교내 장학금 추가 모집",
+            source = "학생복지처",
+            createdAt = "2026-07-12T09:00:00",
+            deadlineAt = "2026-08-02T18:00:00"
         ),
         Notice(
             noticeId = 12,
-            categoryTag = "학사",
-            title = "2026-1학기 성적 이의신청 안내",
-            source = "교무처",
-            createdAt = "2026-06-20T09:00:00",
-            deadlineAt = null
+            categoryTag = "교환학생",
+            title = "2026-1학기 교환학생 모집 안내",
+            source = "국제교류처",
+            createdAt = "2026-07-12T09:00:00",
+            deadlineAt = "2026-07-28T18:00:00"
+        ),
+        Notice(
+            noticeId = 13,
+            categoryTag = "비교과",
+            title = "글로벌 역량강화 프로그램 모집",
+            source = "국제교육처",
+            createdAt = "2026-07-11T09:00:00",
+            deadlineAt = "2026-07-20T18:00:00"
+        ),
+        Notice(
+            noticeId = 14,
+            categoryTag = "취업",
+            title = "교내 채용설명회 사전 신청",
+            source = "취업지원팀",
+            createdAt = "2026-07-03T09:00:00",
+            deadlineAt = "2026-07-23T18:00:00"
         )
     )
 
     override suspend fun searchNotices(keyword: String): List<Notice> {
         delay(300)
-        if (keyword.isBlank()) return emptyList()
-        return allNotices.filter { it.title.contains(keyword) }
+        if (keyword.isBlank()) return allNotices
+        return allNotices.filter { it.title.contains(keyword) || it.categoryTag.contains(keyword) }
     }
 }
