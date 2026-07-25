@@ -1,5 +1,6 @@
 package com.umc.catchandroid.presentation.onboarding
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,17 +19,51 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kakao.sdk.common.model.ClientError
+import com.kakao.sdk.common.model.ClientErrorCause
+import com.kakao.sdk.user.UserApiClient
 import com.umc.catchandroid.R
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: (String) -> Unit,
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+
+    fun handleKakaoLogin() {
+        val callback: (com.kakao.sdk.auth.model.OAuthToken?, Throwable?) -> Unit = { token, error ->
+            if (error != null) {
+                if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
+                    // 사용자가 로그인 취소한 경우, 별도 처리 없음
+                } else {
+                    Toast.makeText(context, "카카오 로그인 실패", Toast.LENGTH_SHORT).show()
+                }
+            } else if (token != null) {
+                viewModel.loginWithSocialToken(token.accessToken, "KAKAO") { success ->
+                    if (success) {
+                        onLoginSuccess("kakao")
+                    } else {
+                        Toast.makeText(context, "서버 로그인 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
+            UserApiClient.instance.loginWithKakaoTalk(context, callback = callback)
+        } else {
+            UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +71,6 @@ fun LoginScreen(
     ) {
         Spacer(modifier = Modifier.height(80.dp))
 
-        // 로고 + 텍스트 영역 (위쪽)
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -65,11 +99,10 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(180.dp))
 
-        // 로그인 버튼 영역 (아래쪽)
         Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-            // 카카오 로그인 버튼
+            // 카카오 로그인 버튼 (실제 SDK 연동)
             Button(
-                onClick = { onLoginSuccess("kakao") },
+                onClick = { handleKakaoLogin() },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE812))
@@ -90,7 +123,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 구글 로그인 버튼
+            // 구글 로그인 버튼 (다음 단계에서 연동 예정, 현재는 임시로 Mock 흐름)
             OutlinedButton(
                 onClick = { onLoginSuccess("google") },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
@@ -111,7 +144,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 애플 로그인 버튼
+            // 애플 로그인 버튼 (지원 예정)
             Button(
                 onClick = { onLoginSuccess("apple") },
                 modifier = Modifier.fillMaxWidth().height(52.dp),

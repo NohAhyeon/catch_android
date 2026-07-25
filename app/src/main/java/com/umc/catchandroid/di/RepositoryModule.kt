@@ -1,9 +1,9 @@
 package com.umc.catchandroid.di
 
 import com.umc.catchandroid.data.repository.MockCalendarRepositoryImpl
-import com.umc.catchandroid.data.repository.MockNoticeRepositoryImpl
 import com.umc.catchandroid.data.repository.MockSearchRepositoryImpl
 import com.umc.catchandroid.data.repository.MockUserRepositoryImpl
+import com.umc.catchandroid.data.repository.NoticeRepositoryImpl
 import com.umc.catchandroid.domain.repository.CalendarRepository
 import com.umc.catchandroid.domain.repository.NoticeRepository
 import com.umc.catchandroid.domain.repository.SearchRepository
@@ -19,7 +19,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindNoticeRepository(
-        impl: MockNoticeRepositoryImpl
+        impl: NoticeRepositoryImpl
     ): NoticeRepository
 
     @Binds

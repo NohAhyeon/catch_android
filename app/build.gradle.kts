@@ -1,3 +1,12 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -24,19 +33,19 @@ android {
 
         buildConfigField(
             "String", "KAKAO_NATIVE_APP_KEY",
-            "\"${project.findProperty("KAKAO_NATIVE_APP_KEY") ?: ""}\""
+            "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""}\""
         )
         buildConfigField(
             "String", "GOOGLE_SERVER_CLIENT_ID",
-            "\"${project.findProperty("GOOGLE_SERVER_CLIENT_ID") ?: ""}\""
+            "\"${localProperties.getProperty("GOOGLE_SERVER_CLIENT_ID") ?: ""}\""
         )
         buildConfigField(
             "String", "BASE_URL",
-            "\"${project.findProperty("BASE_URL") ?: "https://api.example.com/"}\""
+            "\"${localProperties.getProperty("BASE_URL") ?: "https://api.example.com/"}\""
         )
 
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] =
-            project.findProperty("KAKAO_NATIVE_APP_KEY") as String? ?: ""
+            localProperties.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""
     }
 
     buildTypes {
