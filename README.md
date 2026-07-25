@@ -100,17 +100,17 @@
 
 ## 📱 화면 목록 & 플로우
 
-| 화면 이름 | 스크린 ID | 진입 경로 | 담당자 | 진행 상태 |
-|-----------|-----------|-----------|--------|-----------|
-| 로그인 | LoginScreen | 앱 최초 실행 | | ✅ 완료 (카카오 SDK 실연동) |
-| 온보딩 - 대학 선택 | OnboardingUniversityScreen | 로그인 완료 후 최초 1회 | | ✅ 완료 |
-| 온보딩 - 프로필 설정 | OnboardingProfileScreen | 대학 선택 후 | | ✅ 완료 |
-| 온보딩 - 관심 키워드 | OnboardingKeywordScreen | 프로필 설정 후 | | ✅ 완료 |
-| 홈 | HomeScreen | 설정 완료 후 / 메인 진입점 | | ✅ 완료 (실 API 연동) |
-| 공지 상세 | NoticeDetailScreen | 홈 → 아이템 클릭 | | ✅ 완료 (Mock 연동) |
-| 검색 | SearchScreen | 하단 탭 → 검색 | | ✅ 완료 (Mock 연동) |
-| 캘린더 | CalendarScreen | 하단 탭 → 캘린더 | | ✅ 완료 (Mock 연동) |
-| 마이페이지 | MyPageScreen | 하단 탭 → 마이페이지 | | ✅ 완료 (Mock 연동) |
+| 화면 이름 | 스크린 ID | 진입 경로 | 진행 상태 |
+|-----------|-----------|----------|------|
+| 로그인 | LoginScreen | 앱 최초 실행 | ✅ 완료 (카카오 SDK 실연동) |
+| 온보딩 - 대학 선택 | OnboardingUniversityScreen | 로그인 완료 후 최초 1회 | ✅ 완료 |
+| 온보딩 - 프로필 설정 | OnboardingProfileScreen | 대학 선택 후 | ✅ 완료 |
+| 온보딩 - 관심 키워드 | OnboardingKeywordScreen | 프로필 설정 후 | ✅ 완료 |
+| 홈 | HomeScreen | 설정 완료 후 / 메인 진입점 | ✅ 완료 (실 API 연동) |
+| 공지 상세 | NoticeDetailScreen | 홈 → 아이템 클릭 | ✅ 완료 (Mock 연동) |
+| 검색 | SearchScreen | 하단 탭 → 검색 | ✅ 완료 (Mock 연동) |
+| 캘린더 | CalendarScreen | 하단 탭 → 캘린더 | ✅ 완료 (Mock 연동) |
+| 마이페이지 | MyPageScreen | 하단 탭 → 마이페이지 | ✅ 완료 (Mock 연동) |
 
 ### 네비게이션 플로우
 
