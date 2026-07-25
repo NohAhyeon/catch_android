@@ -1,102 +1,103 @@
-# 공지캐치 Android 컨벤션
+# 📐 공지캐치 Android 개발 컨벤션
 
----
+## 브랜치 전략
+- `main` — 배포/제출 가능한 안정 버전만
+- `develop` — 개발 통합 브랜치
+- `feature/기능명` — 개별 기능 개발 (예: `feature/login`, `feature/notice-list`)
+- `submit/mvp` — 과제 제출용 브랜치
 
-## 브랜치 네이밍 규칙
-
-```
-<type>/<간단한 설명>
-```
-
-| 타입 | 설명 |
-|------|------|
-| `feature` | 새 기능 개발 |
-| `fix` | 버그 수정 |
-| `refactor` | 리팩토링 (기능 변경 없음) |
-| `chore` | 빌드, 설정, 의존성 변경 |
-| `docs` | 문서 작성/수정 |
-
-**예시**
-```
-feature/login-screen
-feature/notice-detail
-fix/crash-on-alarm
-refactor/home-viewmodel
-chore/add-retrofit-dependency
-```
-
----
-
-## 커밋 메시지 규칙
+## 커밋 메시지 컨벤션
 
 ```
-<type>: <내용> (#이슈번호)
+[타입] 작업 내용 요약
+
+예시:
+[Feat] 공지사항 목록 화면 구현
+[Fix] 로그인 토큰 만료 오류 수정
+[Refactor] ViewModel 로직 분리
+[Chore] 의존성 추가
+[Docs] README 업데이트
 ```
 
-| 타입 | 설명 |
-|------|------|
-| `feat` | 새 기능 추가 |
-| `fix` | 버그 수정 |
-| `refactor` | 리팩토링 |
-| `chore` | 빌드/설정 변경 |
-| `docs` | 문서 수정 |
-| `style` | 코드 포맷, 세미콜론 누락 등 (로직 변경 없음) |
-| `test` | 테스트 추가/수정 |
+타입 종류: `Feat`(기능 추가), `Fix`(버그 수정), `Refactor`(리팩토링), `Chore`(빌드/설정), `Docs`(문서), `Style`(포맷팅), `Test`(테스트)
 
-**예시**
+## PR(Pull Request) 규칙
+- 기능 단위로 작게 쪼개서 PR 올리기 (한 PR에 너무 많은 거 담지 않기)
+- PR 제목도 커밋 컨벤션과 동일하게
+- 상대방 리뷰 후 머지 (2인이라 서로 코드 한 번씩은 보고 넘어가기)
+- 최소한 빌드 에러는 없는지 확인하고 PR 올리기
+
+## 코드 컨벤션
+- Kotlin 공식 스타일 가이드 기준
+- 패키지 구조: `data`(local, remote, repository) / `domain`(model, repository, usecase) / `presentation`(component, home, notice, search, calendar, mypage, onboarding) / `util`
+- 네이밍 규칙: 변수/함수는 camelCase, 리소스 파일은 snake_case
+
+## Compose 컨벤션
+- **State Hoisting 원칙**: Composable은 가능한 stateless하게 작성하고, 상태는 상위(ViewModel 또는 호출부)에서 관리하고 파라미터로 내려받기
+- 화면 단위 Composable은 `~Screen`, 재사용 컴포넌트는 `~Item`, `~Card` 등 역할이 드러나는 네이밍 사용
+- ViewModel의 상태는 `StateFlow`로 노출하고, Composable에서는 `collectAsState()`로 구독
+- 재사용 가능한 컴포넌트에는 `@Preview` 작성 권장
+
+## 디자인 시스템
+
+### 색상
+| 용도 | 값 |
+|---|---|
+| Primary | #403DE4 |
+| Secondary Light | #E3E8FD |
+| Secondary | #A2B2FD |
+| Text Title | #111111 |
+| Text Body | #4B5563 |
+| Text Caption | #9CA3AF |
+| Background | #F7F9FA |
+| Divider | #A2B2FD |
+| Inactive | #F0F1F3 |
+| 마감임박(Deadline) | #FF5A5F |
+
+### 타이포그래피 (Pretendard 폰트)
+| 구분 | 모바일 크기 | 굵기 |
+|---|---|---|
+| 대제목(H1) | 24~28px | Bold |
+| 중제목(H2) | 18~22px | Semibold |
+| 본문(Body) | 15~17px | Regular |
+| 보조문구(Caption) | 13~14px | Regular |
+| 최소 크기 | 11px | - |
+
+### 레이아웃 & 간격
+- 기준 화면 너비 390px, 좌우 여백 항상 16px 또는 20px 고정
+- 상단바 영역 44~47px는 시스템 영역이라 비워두기
+- 내부 간격: 8px / 12px / 16px
+- 요소 간 간격: 16px / 24px
+- 섹션 간 간격: 40px / 56px / 80px (영역 구분 명확히)
+
+### 버튼 규격
+- 메인 버튼: 56px, filled primary
+- 서브 버튼: 48px, outlined
+- 하단 선택 버튼: 56px, filled (연한 primary)
+- 작은 버튼(칩): 37px
+- 터치 영역 기본: 44×44px
+
+## 환경 설정 관련 주의사항
+
+### `local.properties` 값 읽기
+- `project.findProperty(...)`는 `local.properties`를 자동으로 읽지 않는다 (Gradle 함정!)
+- `local.properties` 값을 `BuildConfig`에 반영하려면 `app/build.gradle.kts` 상단에서 `Properties()`로 직접 로드해야 함:
+```kotlin
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
 ```
-feat: 공지 상세 화면 AI 요약 카드 구현 (#12)
-fix: 홈 화면 리스트 스크롤 위치 초기화 버그 수정 (#15)
-chore: Hilt 의존성 추가 (#8)
-```
+- 이후 `localProperties.getProperty("KEY_NAME")` 형태로 사용
 
----
+### AndroidManifest.xml 수정 시 주의
+- 새 `<activity>`나 SDK 관련 태그 추가할 때, 기존에 있던 **`MainActivity`(LAUNCHER 진입점)**와 **`<uses-permission android:name="android.permission.INTERNET" />`**를 실수로 삭제하지 않도록 주의
+- 매니페스트 전체 삭제 후 재작성하지 말고, 필요한 부분만 추가/수정할 것
 
-## PR 규칙
-
-- **브랜치**: `feature/*` → `develop` 으로 PR
-- **제목 형식**: `[feat] 공지 상세 화면 구현`
-- **리뷰어**: Android 팀원 전원 필수 지정
-- **머지 조건**: 리뷰어 1명 이상 Approve 후 본인이 머지
-- **머지 방식**: Squash and Merge
-- **PR 크기**: 하나의 PR은 하나의 기능 단위로 유지 (리뷰 용이성)
-
-**PR 템플릿 항목**
-- 작업 내용 요약
-- 스크린샷 (UI 변경 시 필수)
-- 관련 이슈 번호
-
----
-
-## 코드 네이밍 규칙
-
-### 파일 / 클래스
-
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| Composable 함수 | PascalCase | `NoticeDetailScreen` |
-| ViewModel | PascalCase + ViewModel 접미사 | `NoticeDetailViewModel` |
-| UseCase | PascalCase + UseCase 접미사 | `GetNoticeDetailUseCase` |
-| Repository 인터페이스 | PascalCase + Repository 접미사 | `NoticeRepository` |
-| Repository 구현체 | PascalCase + RepositoryImpl 접미사 | `NoticeRepositoryImpl` |
-| DTO | PascalCase + Dto 접미사 | `NoticeResponseDto` |
-| 도메인 모델 | PascalCase | `Notice` |
-
-### 변수 / 함수
-
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| 변수 | camelCase | `noticeList`, `isLoading` |
-| 함수 | camelCase | `fetchNoticeDetail()` |
-| 상수 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
-| 리소스 ID (Compose 제외) | snake_case | `ic_alarm`, `color_primary` |
-
----
-
-## 패키지 구조 규칙
-
-- 레이어 기준으로 분리: `data` / `domain` / `presentation`
-- 화면 단위 패키지는 `presentation` 하위에 기능명으로 생성
-  - 예: `presentation/notice/`, `presentation/alarm/`
-- 공통 컴포넌트는 `presentation/component/` 에 모음
-- 전역 유틸은 `util/` 에 위치
+### API 연동 시 참고
+- Mock Repository → 실제 Repository 전환 시, `RepositoryModule.kt`의 `@Binds` 바인딩 대상만 교체하면 됨 (ViewModel/Screen 코드는 그대로 유지)
+- 인증이 필요한 API는 OkHttp `Interceptor`로 `Authorization` 헤더 자동 첨부 처리
