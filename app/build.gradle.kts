@@ -21,6 +21,22 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String", "KAKAO_NATIVE_APP_KEY",
+            "\"${project.findProperty("KAKAO_NATIVE_APP_KEY") ?: ""}\""
+        )
+        buildConfigField(
+            "String", "GOOGLE_SERVER_CLIENT_ID",
+            "\"${project.findProperty("GOOGLE_SERVER_CLIENT_ID") ?: ""}\""
+        )
+        buildConfigField(
+            "String", "BASE_URL",
+            "\"${project.findProperty("BASE_URL") ?: "https://api.example.com/"}\""
+        )
+
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] =
+            project.findProperty("KAKAO_NATIVE_APP_KEY") as String? ?: ""
     }
 
     buildTypes {
@@ -38,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -75,6 +92,12 @@ dependencies {
 
     // Coil (이미지 로딩)
     implementation(libs.coil.compose)
+
+    // 소셜 로그인
+    implementation(libs.kakao.sdk.user)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.google.id)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

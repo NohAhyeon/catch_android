@@ -5,15 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.umc.catchandroid.presentation.calendar.CalendarScreen
-import com.umc.catchandroid.presentation.home.HomeScreen
-import com.umc.catchandroid.presentation.mypage.MyPageScreen
-import com.umc.catchandroid.presentation.notice.NoticeDetailScreen
 import com.umc.catchandroid.presentation.onboarding.LoginScreen
 import com.umc.catchandroid.presentation.onboarding.OnboardingKeywordScreen
 import com.umc.catchandroid.presentation.onboarding.OnboardingProfileScreen
 import com.umc.catchandroid.presentation.onboarding.OnboardingUniversityScreen
-import com.umc.catchandroid.presentation.search.SearchScreen
 
 @Composable
 fun CatchNavHost(
@@ -26,8 +21,8 @@ fun CatchNavHost(
         // 로그인
         composable(Screen.Login.route) {
             LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(Screen.OnboardingUniversity.route) {
+                onLoginSuccess = { provider ->
+                    navController.navigate(Screen.OnboardingUniversity.createRoute(provider)) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
@@ -35,8 +30,10 @@ fun CatchNavHost(
         }
 
         // 온보딩
-        composable(Screen.OnboardingUniversity.route) {
+        composable(Screen.OnboardingUniversity.route) { backStackEntry ->
+            val provider = backStackEntry.arguments?.getString("provider") ?: "kakao"
             OnboardingUniversityScreen(
+                provider = provider,
                 onNext = { navController.navigate(Screen.OnboardingProfile.route) }
             )
         }

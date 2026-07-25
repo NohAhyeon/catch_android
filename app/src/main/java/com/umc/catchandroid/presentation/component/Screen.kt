@@ -3,7 +3,9 @@ package com.umc.catchandroid.presentation.component
 sealed class Screen(val route: String) {
     // 인증/온보딩
     object Login : Screen("login")
-    object OnboardingUniversity : Screen("onboarding_university")
+    object OnboardingUniversity : Screen("onboarding_university/{provider}") {
+        fun createRoute(provider: String) = "onboarding_university/$provider"
+    }
     object OnboardingProfile : Screen("onboarding_profile")
     object OnboardingKeyword : Screen("onboarding_keyword")
 
