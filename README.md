@@ -126,7 +126,7 @@
 
 ---
 ## 🔗 연결 정보
-- Figma 디자인 시스템: (팀 Figma 링크)
+- Figma 디자인 시스템: https://www.figma.com/design/wt4Av7o4wtnAYe6FIJIyPl/Untitled?node-id=0-1
 
 ---
 ## 🤝 프로젝트의 일관성을 위한 공지캐치 Android 개발 컨벤션 규칙 보러가기
