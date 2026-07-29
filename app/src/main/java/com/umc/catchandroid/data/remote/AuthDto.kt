@@ -1,7 +1,7 @@
 package com.umc.catchandroid.data.remote
 
 data class LoginRequest(
-    val socialToken: String,
+    val authorizationCode: String,
     val socialType: String
 )
 

@@ -23,7 +23,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = authApiService.login(
-                    LoginRequest(socialToken = socialToken, socialType = socialType)
+                    LoginRequest(authorizationCode = socialToken, socialType = socialType)
                 )
                 val result = response.result
                 if (response.isSuccess && result != null) {

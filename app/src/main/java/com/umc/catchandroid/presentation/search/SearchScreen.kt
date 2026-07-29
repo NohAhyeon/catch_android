@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.width
 
 @Composable
 fun SearchScreen(
+    onNoticeClick: (Long) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val keyword by viewModel.keyword.collectAsState()
@@ -169,7 +170,7 @@ fun SearchScreen(
             }
 
             items(results) { notice ->
-                NoticeItem(notice = notice, onClick = {})
+                NoticeItem(notice = notice, onClick = { onNoticeClick(notice.noticeId) })
                 Spacer(modifier = Modifier.height(10.dp))
             }
         }

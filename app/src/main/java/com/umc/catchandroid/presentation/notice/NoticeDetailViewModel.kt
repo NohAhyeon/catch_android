@@ -26,4 +26,12 @@ class NoticeDetailViewModel @Inject constructor(
             _detail.value = noticeRepository.getNoticeDetail(noticeId)
         }
     }
+
+    fun toggleScrap() {
+        val current = _detail.value ?: return
+        viewModelScope.launch {
+            val newState = noticeRepository.toggleScrap(current.noticeId)
+            _detail.value = current.copy(isScrapped = newState)
+        }
+    }
 }

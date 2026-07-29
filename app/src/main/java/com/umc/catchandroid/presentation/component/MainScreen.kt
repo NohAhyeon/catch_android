@@ -13,6 +13,7 @@ import com.umc.catchandroid.presentation.home.HomeScreen
 import com.umc.catchandroid.presentation.mypage.MyPageScreen
 import com.umc.catchandroid.presentation.notice.NoticeDetailScreen
 import com.umc.catchandroid.presentation.search.SearchScreen
+import com.umc.catchandroid.presentation.notice.WebViewScreen
 
 @Composable
 fun MainScreen() {
@@ -39,12 +40,37 @@ fun MainScreen() {
                     ?.toLongOrNull() ?: 0L
                 NoticeDetailScreen(
                     noticeId = noticeId,
+                    onBack = { mainNavController.popBackStack() },
+                    onOpenOriginal = { url ->
+                        mainNavController.navigate(Screen.WebView.createRoute(url))
+                    }
+                )
+            }
+            composable(Screen.WebView.route) { backStackEntry ->
+                val encodedUrl = backStackEntry.arguments?.getString("url") ?: ""
+                val url = Screen.WebView.decodeUrl(encodedUrl)
+                WebViewScreen(
+                    url = url,
                     onBack = { mainNavController.popBackStack() }
                 )
             }
-            composable(Screen.Search.route) { SearchScreen() }
+            composable(Screen.Search.route) {
+                SearchScreen(
+                    onNoticeClick = { noticeId ->
+                        mainNavController.navigate(Screen.NoticeDetail.createRoute(noticeId))
+                    }
+                )
+            }
             composable(Screen.Calendar.route) { CalendarScreen() }
-            composable(Screen.MyPage.route) { MyPageScreen() }
+            composable(Screen.MyPage.route) {
+                MyPageScreen(
+                    onLogout = {
+                        mainNavController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }

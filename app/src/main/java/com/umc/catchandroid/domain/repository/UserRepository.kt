@@ -5,8 +5,8 @@ import com.umc.catchandroid.domain.model.UserProfile
 interface UserRepository {
     suspend fun getUserProfile(): UserProfile
     suspend fun updateOnboardingInfo(
-        university: String? = null,
-        department: String? = null,
+        departmentId: Long? = null,
         grade: Int? = null
     )
+    suspend fun updateKeywords(keywords: List<Pair<String, String>>) // (keyword, keywordType)
 }

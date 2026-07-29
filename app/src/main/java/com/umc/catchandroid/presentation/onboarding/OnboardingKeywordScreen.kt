@@ -29,9 +29,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.R
 import com.umc.catchandroid.ui.theme.CatchInactive
 import com.umc.catchandroid.ui.theme.CatchPrimary
@@ -44,10 +48,14 @@ private val recommendedKeywords = listOf("장학금", "비교과", "학사", "�
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun OnboardingKeywordScreen(
-    onComplete: () -> Unit
+    onComplete: () -> Unit,
+    viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    var selectedKeywords by remember { mutableStateOf(setOf("장학금", "비교과", "취업")) }
+    var selectedRecommended by remember { mutableStateOf(setOf("장학금", "비교과", "취업")) }
+    var customKeywords by remember { mutableStateOf(setOf<String>()) }
     var customInput by remember { mutableStateOf("") }
+
+    val totalCount = selectedRecommended.size + customKeywords.size
 
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Text(
@@ -61,7 +69,7 @@ fun OnboardingKeywordScreen(
         HorizontalDivider(color = CatchInactive, thickness = 1.dp)
 
         Text(
-            text = "관심사를 고르면 맞춤 공지를 받아요 (${selectedKeywords.size}/4)",
+            text = "관심사를 고르면 맞춤 공지를 받아요 ($totalCount/4)",
             fontSize = 13.sp,
             color = CatchTextCaption,
             modifier = Modifier.padding(top = 16.dp, bottom = 40.dp)
@@ -76,7 +84,7 @@ fun OnboardingKeywordScreen(
         )
         FlowRow(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
             recommendedKeywords.forEach { keyword ->
-                val isSelected = selectedKeywords.contains(keyword)
+                val isSelected = selectedRecommended.contains(keyword)
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -92,10 +100,10 @@ fun OnboardingKeywordScreen(
                             shape = RoundedCornerShape(20.dp)
                         )
                         .clickable {
-                            selectedKeywords = if (isSelected) {
-                                selectedKeywords - keyword
+                            selectedRecommended = if (isSelected) {
+                                selectedRecommended - keyword
                             } else {
-                                selectedKeywords + keyword
+                                selectedRecommended + keyword
                             }
                         }
                         .padding(horizontal = 20.dp)
@@ -122,11 +130,44 @@ fun OnboardingKeywordScreen(
             placeholder = { Text("키워드 입력 후 Enter (2-20자)", color = CatchTextCaption) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    val trimmed = customInput.trim()
+                    if (trimmed.length in 2..20) {
+                        customKeywords = customKeywords + trimmed
+                        customInput = ""
+                    }
+                }
+            ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = CatchPrimary,
                 unfocusedBorderColor = CatchInactive
             )
         )
+
+        if (customKeywords.isNotEmpty()) {
+            FlowRow(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                customKeywords.forEach { keyword ->
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .padding(end = 8.dp, bottom = 8.dp)
+                            .height(36.dp)
+                            .background(
+                                color = CatchSecondary,
+                                shape = RoundedCornerShape(18.dp)
+                            )
+                            .clickable {
+                                customKeywords = customKeywords - keyword
+                            }
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text(text = "$keyword ✕", fontSize = 13.sp, color = Color.White)
+                    }
+                }
+            }
+        }
 
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -153,7 +194,13 @@ fun OnboardingKeywordScreen(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
-                .clickable { onComplete() }
+                .clickable {
+                    viewModel.saveKeywords(
+                        recommended = selectedRecommended.toList(),
+                        custom = customKeywords.toList(),
+                        onDone = onComplete
+                    )
+                }
         ) {
             Text(
                 text = "완료하고 시작하기",

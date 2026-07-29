@@ -1,7 +1,9 @@
 package com.umc.catchandroid.data.remote
 
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.POST
 
 interface NoticeApiService {
     @GET("api/v1/notices")
@@ -9,4 +11,22 @@ interface NoticeApiService {
         @Query("page") page: Int,
         @Query("size") size: Int
     ): ApiResponse<NoticeListResult>
+
+    @GET("api/v1/notices/{noticeId}")
+    suspend fun getNoticeDetail(
+        @Path("noticeId") noticeId: Long
+    ): ApiResponse<NoticeDetailDto>
+
+    @GET("api/v1/notices/search")
+    suspend fun searchNotices(
+        @Query("searchWord") searchWord: String,
+        @Query("sort") sort: String = "latest",
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): ApiResponse<NoticeListResult>
+
+    @POST("api/v1/notices/{noticeId}/scrap")
+    suspend fun toggleScrap(
+        @Path("noticeId") noticeId: Long
+    ): ApiResponse<ScrapResultDto>
 }

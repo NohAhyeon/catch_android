@@ -16,6 +16,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,12 +25,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import com.umc.catchandroid.BuildConfig
 import com.umc.catchandroid.R
 import com.umc.catchandroid.ui.theme.CatchTextCaption
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -37,6 +45,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     fun handleKakaoLogin() {
         val callback: (com.kakao.sdk.auth.model.OAuthToken?, Throwable?) -> Unit = { token, error ->
@@ -61,6 +70,42 @@ fun LoginScreen(
             UserApiClient.instance.loginWithKakaoTalk(context, callback = callback)
         } else {
             UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+        }
+    }
+
+    fun handleGoogleLogin() {
+        coroutineScope.launch {
+            try {
+                val credentialManager = CredentialManager.create(context)
+
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setServerClientId(BuildConfig.GOOGLE_SERVER_CLIENT_ID)
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = context
+                )
+
+                val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
+                val idToken = credential.idToken
+
+                viewModel.loginWithSocialToken(idToken, "GOOGLE") { success ->
+                    if (success) {
+                        onLoginSuccess("google")
+                    } else {
+                        Toast.makeText(context, "서버 로그인 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: GetCredentialException) {
+                e.printStackTrace()
+                Toast.makeText(context, "구글 로그인 실패", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -123,9 +168,9 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 구글 로그인 버튼 (다음 단계에서 연동 예정, 현재는 임시로 Mock 흐름)
+            // 구글 로그인 버튼 (실제 Credential Manager 연동)
             OutlinedButton(
-                onClick = { onLoginSuccess("google") },
+                onClick = { handleGoogleLogin() },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -144,7 +189,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 애플 로그인 버튼 (지원 예정)
+            // 애플 로그인 버튼 (지원 예정, 임시 Mock)
             Button(
                 onClick = { onLoginSuccess("apple") },
                 modifier = Modifier.fillMaxWidth().height(52.dp),

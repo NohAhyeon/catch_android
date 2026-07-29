@@ -1,5 +1,7 @@
 package com.umc.catchandroid.di
 
+import com.umc.catchandroid.data.remote.UniversityApiService
+import com.umc.catchandroid.data.remote.UserApiService
 import com.umc.catchandroid.BuildConfig
 import com.umc.catchandroid.data.remote.AuthApiService
 import com.umc.catchandroid.data.remote.NoticeApiService
@@ -49,5 +51,17 @@ object NetworkModule {
     @Singleton
     fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUniversityApiService(retrofit: Retrofit): UniversityApiService {
+        return retrofit.create(UniversityApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserApiService(retrofit: Retrofit): UserApiService {
+        return retrofit.create(UserApiService::class.java)
     }
 }

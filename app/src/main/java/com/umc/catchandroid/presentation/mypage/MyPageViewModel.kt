@@ -2,6 +2,7 @@ package com.umc.catchandroid.presentation.mypage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.umc.catchandroid.data.local.TokenManager
 import com.umc.catchandroid.domain.model.UserProfile
 import com.umc.catchandroid.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MyPageViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _userProfile = MutableStateFlow<UserProfile?>(null)
@@ -26,6 +28,13 @@ class MyPageViewModel @Inject constructor(
     private fun loadProfile() {
         viewModelScope.launch {
             _userProfile.value = userRepository.getUserProfile()
+        }
+    }
+
+    fun logout(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            tokenManager.clearTokens()
+            onComplete()
         }
     }
 }

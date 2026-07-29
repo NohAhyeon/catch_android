@@ -34,11 +34,15 @@ fun CatchNavHost(
             val provider = backStackEntry.arguments?.getString("provider") ?: "kakao"
             OnboardingUniversityScreen(
                 provider = provider,
-                onNext = { navController.navigate(Screen.OnboardingProfile.route) }
+                onNext = { universityId ->
+                    navController.navigate(Screen.OnboardingProfile.createRoute(universityId))
+                }
             )
         }
-        composable(Screen.OnboardingProfile.route) {
+        composable(Screen.OnboardingProfile.route) { backStackEntry ->
+            val universityId = backStackEntry.arguments?.getString("universityId")?.toLongOrNull() ?: 1L
             OnboardingProfileScreen(
+                universityId = universityId,
                 onNext = { navController.navigate(Screen.OnboardingKeyword.route) }
             )
         }

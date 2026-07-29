@@ -18,8 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,9 +35,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchSecondaryLight
@@ -44,13 +47,17 @@ import com.umc.catchandroid.ui.theme.CatchTextBody
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
 import androidx.compose.foundation.layout.width
+import android.content.Intent
+
 @Composable
 fun NoticeDetailScreen(
     noticeId: Long,
     onBack: () -> Unit,
+    onOpenOriginal: (String) -> Unit,
     viewModel: NoticeDetailViewModel = hiltViewModel()
 ) {
     val detail by viewModel.detail.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(noticeId) {
         viewModel.load(noticeId)
@@ -69,6 +76,27 @@ fun NoticeDetailScreen(
                 color = CatchTextTitle,
                 modifier = Modifier.align(Alignment.Center)
             )
+            Row(modifier = Modifier.align(Alignment.CenterEnd)) {
+                val notice = detail
+                IconButton(onClick = { viewModel.toggleScrap() }) {
+                    Icon(
+                        imageVector = if (notice?.isScrapped == true) Icons.Default.Star else Icons.Outlined.StarOutline,
+                        contentDescription = "스크랩",
+                        tint = CatchPrimary
+                    )
+                }
+                IconButton(onClick = {
+                    notice?.let {
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, "${it.title}\n${it.originalUrl}")
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, "공유하기"))
+                    }
+                }) {
+                    Icon(Icons.Default.Share, contentDescription = "공유하기", tint = CatchTextTitle)
+                }
+            }
         }
 
         val notice = detail
@@ -155,7 +183,7 @@ fun NoticeDetailScreen(
                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
             )
             Text(
-                text = notice.content,
+                text = notice.content ?: "아직 등록된 공지 내용이 없습니다.",
                 fontSize = 14.sp,
                 color = CatchTextBody,
                 lineHeight = 22.sp
@@ -164,7 +192,7 @@ fun NoticeDetailScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             OutlinedButton(
-                onClick = { /* TODO: 브라우저 열기 */ },
+                onClick = { onOpenOriginal(notice.originalUrl) },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {

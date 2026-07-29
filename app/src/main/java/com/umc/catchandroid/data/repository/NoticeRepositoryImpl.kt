@@ -1,6 +1,7 @@
 package com.umc.catchandroid.data.repository
 
 import com.umc.catchandroid.data.remote.NoticeApiService
+import com.umc.catchandroid.domain.model.AiSummary
 import com.umc.catchandroid.domain.model.Notice
 import com.umc.catchandroid.domain.model.NoticeDetail
 import com.umc.catchandroid.domain.repository.NoticeRepository
@@ -30,7 +31,40 @@ class NoticeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getNoticeDetail(noticeId: Long): NoticeDetail? {
-        // 공지 상세 API는 다음 단계에서 연동 예정
-        return null
+        return try {
+            val response = api.getNoticeDetail(noticeId)
+            response.result?.let { dto ->
+                NoticeDetail(
+                    noticeId = dto.noticeId,
+                    categoryTag = dto.categoryTag,
+                    title = dto.title,
+                    source = dto.source,
+                    createdAt = dto.createdAt,
+                    deadlineAt = dto.deadlineAt,
+                    content = dto.content,
+                    originalUrl = dto.originalUrl,
+                    isScrapped = dto.isScrapped,
+                    aiSummary = dto.aiSummary?.let {
+                        AiSummary(
+                            eligibility = it.eligibility,
+                            benefit = it.benefit,
+                            deadline = it.deadline
+                        )
+                    }
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun toggleScrap(noticeId: Long): Boolean {
+        return try {
+            api.toggleScrap(noticeId).result?.isScraped ?: false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }
