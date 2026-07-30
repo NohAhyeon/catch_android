@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,10 +61,18 @@ import androidx.compose.ui.draw.clip
 @Composable
 fun MyPageScreen(
     onLogout: () -> Unit,
+    onKeywordManageClick: () -> Unit = {},
+    onSchoolInfoClick: () -> Unit = {},
+    onNotificationSettingsClick: () -> Unit = {},
+    onSpecLogClick: () -> Unit = {},
     viewModel: MyPageViewModel = hiltViewModel()
 ) {
     val profile by viewModel.userProfile.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshProfile()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 상단 앱바
@@ -160,10 +169,10 @@ fun MyPageScreen(
 
                 // 메뉴 리스트
                 MenuRow(icon = Icons.Default.Star, label = "스크랩")
-                MenuRow(icon = Icons.Default.Assignment, label = "스펙 로그")
-                MenuRow(icon = Icons.Default.Bookmark, label = "관심 키워드")
-                MenuRow(icon = Icons.Default.Notifications, label = "알림 설정")
-                MenuRow(icon = Icons.Default.School, label = "학교 정보 수정")
+                MenuRow(icon = Icons.Default.Assignment, label = "스펙 로그", onClick = onSpecLogClick)
+                MenuRow(icon = Icons.Default.Bookmark, label = "관심 키워드", onClick = onKeywordManageClick)
+                MenuRow(icon = Icons.Default.Notifications, label = "알림 설정", onClick = onNotificationSettingsClick)
+                MenuRow(icon = Icons.Default.School, label = "학교 정보 수정", onClick = onSchoolInfoClick)
                 MenuRow(icon = Icons.Default.Info, label = "공지사항 · FAQ")
                 MenuRow(icon = Icons.Default.HelpOutline, label = "문의하기")
 
@@ -249,11 +258,11 @@ private fun StatCard(count: Int, label: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun MenuRow(icon: ImageVector, label: String) {
+private fun MenuRow(icon: ImageVector, label: String, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onClick() }
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

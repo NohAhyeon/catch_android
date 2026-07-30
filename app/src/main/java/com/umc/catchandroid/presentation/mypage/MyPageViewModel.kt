@@ -22,10 +22,10 @@ class MyPageViewModel @Inject constructor(
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
     init {
-        loadProfile()
+        refreshProfile()
     }
 
-    private fun loadProfile() {
+    fun refreshProfile() {
         viewModelScope.launch {
             _userProfile.value = userRepository.getUserProfile()
         }

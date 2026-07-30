@@ -10,13 +10,21 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.umc.catchandroid.presentation.calendar.CalendarScreen
 import com.umc.catchandroid.presentation.home.HomeScreen
+import com.umc.catchandroid.presentation.mypage.KeywordManageScreen
 import com.umc.catchandroid.presentation.mypage.MyPageScreen
+import com.umc.catchandroid.presentation.mypage.NotificationSettingsScreen
+import com.umc.catchandroid.presentation.mypage.SchoolInfoEditScreen
+import com.umc.catchandroid.presentation.mypage.SpecAddScreen
+import com.umc.catchandroid.presentation.mypage.SpecDetailScreen
+import com.umc.catchandroid.presentation.mypage.SpecLogScreen
 import com.umc.catchandroid.presentation.notice.NoticeDetailScreen
 import com.umc.catchandroid.presentation.search.SearchScreen
 import com.umc.catchandroid.presentation.notice.WebViewScreen
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onLogout: () -> Unit = {}
+) {
     val mainNavController = rememberNavController()
 
     Scaffold(
@@ -61,14 +69,57 @@ fun MainScreen() {
                     }
                 )
             }
-            composable(Screen.Calendar.route) { CalendarScreen() }
+            composable(Screen.Calendar.route) {
+                CalendarScreen(
+                    onNoticeClick = { noticeId ->
+                        mainNavController.navigate(Screen.NoticeDetail.createRoute(noticeId))
+                    }
+                )
+            }
             composable(Screen.MyPage.route) {
                 MyPageScreen(
-                    onLogout = {
-                        mainNavController.navigate(Screen.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                    onLogout = onLogout,
+                    onKeywordManageClick = { mainNavController.navigate(Screen.KeywordManage.route) },
+                    onSchoolInfoClick = { mainNavController.navigate(Screen.SchoolInfoEdit.route) },
+                    onNotificationSettingsClick = { mainNavController.navigate(Screen.NotificationSettings.route) },
+                    onSpecLogClick = { mainNavController.navigate(Screen.SpecLog.route) }
+                )
+            }
+            composable(Screen.KeywordManage.route) {
+                KeywordManageScreen(
+                    onBack = { mainNavController.popBackStack() }
+                )
+            }
+            composable(Screen.SchoolInfoEdit.route) {
+                SchoolInfoEditScreen(
+                    onBack = { mainNavController.popBackStack() }
+                )
+            }
+            composable(Screen.NotificationSettings.route) {
+                NotificationSettingsScreen(
+                    onBack = { mainNavController.popBackStack() }
+                )
+            }
+            composable(Screen.SpecLog.route) {
+                SpecLogScreen(
+                    onBack = { mainNavController.popBackStack() },
+                    onAddClick = { mainNavController.navigate(Screen.SpecAdd.route) },
+                    onSpecClick = { spec ->
+                        mainNavController.navigate(Screen.SpecDetail.createRoute(spec))
                     }
+                )
+            }
+            composable(Screen.SpecAdd.route) {
+                SpecAddScreen(
+                    onBack = { mainNavController.popBackStack() }
+                )
+            }
+            composable(Screen.SpecDetail.route) { backStackEntry ->
+                val encoded = backStackEntry.arguments?.getString("specData") ?: ""
+                val spec = Screen.SpecDetail.decodeSpec(encoded)
+                SpecDetailScreen(
+                    spec = spec,
+                    onBack = { mainNavController.popBackStack() }
                 )
             }
         }

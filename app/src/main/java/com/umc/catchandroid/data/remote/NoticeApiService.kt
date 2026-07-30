@@ -29,4 +29,23 @@ interface NoticeApiService {
     suspend fun toggleScrap(
         @Path("noticeId") noticeId: Long
     ): ApiResponse<ScrapResultDto>
+
+    @GET("api/v1/notices/calendar")
+    suspend fun getNoticesByDate(
+        @Query("date") date: String,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): ApiResponse<NoticeListResult>
+
+    @GET("api/v1/notices/calendar/no-deadline")
+    suspend fun getNoDeadlineNotices(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): ApiResponse<NoticeListResult>
+
+    @GET("api/v1/notices/calendar/dates")
+    suspend fun getDeadlineDates(
+        @Query("year") year: String,
+        @Query("month") month: String
+    ): ApiResponse<CalendarDatesResult>
 }

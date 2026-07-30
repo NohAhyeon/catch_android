@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -28,27 +30,33 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.presentation.home.NoticeItem
+import com.umc.catchandroid.ui.theme.CatchDeadlineSoon
+import com.umc.catchandroid.ui.theme.CatchInactive
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchTextBody
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
 import java.time.YearMonth
 
-private data class CalendarDay(val day: Int, val isCurrentMonth: Boolean, val dateStr: String?)
-private val weekdays = listOf("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa")
+data class CalendarDay(
+    val day: Int,
+    val isCurrentMonth: Boolean,
+    val dateStr: String?
+)
+
+private val weekDays = listOf("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa")
 
 @Composable
 fun CalendarScreen(
+    onNoticeClick: (Long) -> Unit,
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val yearMonth by viewModel.yearMonth.collectAsState()
@@ -57,8 +65,8 @@ fun CalendarScreen(
     val noticesForDate by viewModel.noticesForDate.collectAsState()
     val upcomingNotices by viewModel.upcomingNotices.collectAsState()
 
-    val calendarDays = remember(yearMonth) { buildCalendarDays(yearMonth) }
-    val selectedDay = selectedDate.substring(8, 10).toIntOrNull() ?: 0
+    val days = buildCalendarDays(yearMonth)
+    val selectedDay = selectedDate.substringAfterLast("-").toIntOrNull() ?: 0
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 상단 앱바
@@ -84,22 +92,22 @@ fun CalendarScreen(
             // 월 이동
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { viewModel.prevMonth() }) {
-                        Icon(Icons.Default.ChevronLeft, contentDescription = "이전 달", tint = CatchTextBody)
+                        Icon(Icons.Default.ChevronLeft, contentDescription = "이전 달", tint = CatchTextTitle)
                     }
                     Text(
                         text = "${yearMonth.year}년 ${yearMonth.monthValue}월",
-                        fontSize = 16.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = CatchTextTitle,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier.padding(horizontal = 24.dp)
                     )
                     IconButton(onClick = { viewModel.nextMonth() }) {
-                        Icon(Icons.Default.ChevronRight, contentDescription = "다음 달", tint = CatchTextBody)
+                        Icon(Icons.Default.ChevronRight, contentDescription = "다음 달", tint = CatchTextTitle)
                     }
                 }
             }
@@ -107,61 +115,48 @@ fun CalendarScreen(
             // 요일 헤더
             item {
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    weekdays.forEach { day ->
-                        Text(
-                            text = day,
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center,
-                            color = if (day == "Su") Color(0xFFE05353) else CatchTextCaption,
-                            modifier = Modifier.weight(1f)
-                        )
+                    weekDays.forEachIndexed { index, day ->
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = day,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = when (index) {
+                                    0 -> Color(0xFFE05353)
+                                    else -> CatchTextCaption
+                                }
+                            )
+                        }
                     }
                 }
             }
 
             // 날짜 그리드
             item {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(7),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height((((calendarDays.size / 7) * 56)).dp)
-                ) {
-                    items(calendarDays) { calDay ->
-                        val isSelected = calDay.isCurrentMonth && calDay.day == selectedDay
-                        val hasDeadline = calDay.dateStr != null && deadlineDates.contains(calDay.dateStr)
-
-                        Box(
-                            modifier = Modifier
-                                .aspectRatio(1f)
-                                .padding(4.dp)
-                                .clickable(enabled = calDay.dateStr != null) {
-                                    calDay.dateStr?.let { viewModel.onDateSelected(it) }
-                                }
-                                .background(
-                                    color = if (isSelected) CatchPrimary else Color.Transparent,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = calDay.day.toString(),
-                                    fontSize = 15.sp,
-                                    color = when {
-                                        isSelected -> Color.White
-                                        !calDay.isCurrentMonth -> CatchTextCaption.copy(alpha = 0.4f)
-                                        else -> CatchTextTitle
+                val weeks = days.chunked(7)
+                Column(modifier = Modifier.padding(top = 8.dp, bottom = 20.dp)) {
+                    weeks.forEach { week ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            week.forEach { calDay ->
+                                CalendarDayCell(
+                                    calDay = calDay,
+                                    isSelected = calDay.isCurrentMonth && calDay.dateStr == selectedDate,
+                                    hasDeadline = calDay.dateStr != null && deadlineDates.contains(calDay.dateStr),
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
+                                        calDay.dateStr?.let { viewModel.onDateSelected(it) }
                                     }
                                 )
                             }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // 선택 날짜 일정
+            // 선택한 날짜 일정
             item {
                 Text(
                     text = "📅 ${yearMonth.monthValue}월 ${selectedDay}일 일정 ${noticesForDate.size}개",
@@ -171,9 +166,20 @@ fun CalendarScreen(
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
             }
-            items(noticesForDate) { notice ->
-                NoticeItem(notice = notice, onClick = {})
-                Spacer(modifier = Modifier.height(10.dp))
+            if (noticesForDate.isEmpty()) {
+                item {
+                    Text(
+                        text = "이 날짜에는 마감 일정이 없어요.",
+                        fontSize = 13.sp,
+                        color = CatchTextCaption,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+                }
+            } else {
+                items(noticesForDate) { notice ->
+                    NoticeItem(notice = notice, onClick = { onNoticeClick(notice.noticeId) })
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
 
             // 다가오는 일정
@@ -186,12 +192,69 @@ fun CalendarScreen(
                     modifier = Modifier.padding(top = 12.dp, bottom = 10.dp)
                 )
             }
-            items(upcomingNotices) { notice ->
-                NoticeItem(notice = notice, onClick = {})
-                Spacer(modifier = Modifier.height(10.dp))
+            if (upcomingNotices.isEmpty()) {
+                item {
+                    Text(
+                        text = "다가오는 일정이 없어요.",
+                        fontSize = 13.sp,
+                        color = CatchTextCaption
+                    )
+                }
+            } else {
+                items(upcomingNotices) { notice ->
+                    NoticeItem(notice = notice, onClick = { onNoticeClick(notice.noticeId) })
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
 
             item { Spacer(modifier = Modifier.height(20.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun CalendarDayCell(
+    calDay: CalendarDay,
+    isSelected: Boolean,
+    hasDeadline: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .aspectRatio(0.8f)
+            .clickable(enabled = calDay.isCurrentMonth) { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .then(
+                    if (isSelected) Modifier.background(CatchPrimary, CircleShape)
+                    else Modifier
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = calDay.day.toString(),
+                fontSize = 14.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = when {
+                    isSelected -> Color.White
+                    !calDay.isCurrentMonth -> CatchInactive
+                    else -> CatchTextTitle
+                }
+            )
+        }
+        if (hasDeadline && !isSelected) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .size(4.dp)
+                    .background(CatchDeadlineSoon, CircleShape)
+            )
+        } else {
+            Spacer(modifier = Modifier.height(6.dp))
         }
     }
 }
@@ -202,7 +265,6 @@ private fun buildCalendarDays(yearMonth: YearMonth): List<CalendarDay> {
     val startOffset = firstDay.dayOfWeek.value % 7 // 일=0 ~ 토=6
     val prevMonth = yearMonth.minusMonths(1)
     val prevLength = prevMonth.lengthOfMonth()
-
     for (i in startOffset downTo 1) {
         days.add(CalendarDay(prevLength - i + 1, false, null))
     }

@@ -11,19 +11,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import javax.inject.Inject
+import java.time.LocalDate
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     private val calendarRepository: CalendarRepository
 ) : ViewModel() {
 
-    private val _yearMonth = MutableStateFlow(YearMonth.of(2026, 6))
+    private val _yearMonth = MutableStateFlow(YearMonth.now())
     val yearMonth: StateFlow<YearMonth> = _yearMonth.asStateFlow()
 
     private val _deadlineDates = MutableStateFlow<List<String>>(emptyList())
     val deadlineDates: StateFlow<List<String>> = _deadlineDates.asStateFlow()
 
-    private val _selectedDate = MutableStateFlow("2026-06-20")
+    private val _selectedDate = MutableStateFlow(LocalDate.now().toString())
     val selectedDate: StateFlow<String> = _selectedDate.asStateFlow()
 
     private val _noticesForDate = MutableStateFlow<List<Notice>>(emptyList())

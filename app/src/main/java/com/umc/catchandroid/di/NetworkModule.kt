@@ -5,6 +5,7 @@ import com.umc.catchandroid.data.remote.UserApiService
 import com.umc.catchandroid.BuildConfig
 import com.umc.catchandroid.data.remote.AuthApiService
 import com.umc.catchandroid.data.remote.NoticeApiService
+import com.umc.catchandroid.data.remote.SpecApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -63,5 +64,11 @@ object NetworkModule {
     @Singleton
     fun provideUserApiService(retrofit: Retrofit): UserApiService {
         return retrofit.create(UserApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpecApiService(retrofit: Retrofit): SpecApiService {
+        return retrofit.create(SpecApiService::class.java)
     }
 }

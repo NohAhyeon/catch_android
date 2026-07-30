@@ -57,7 +57,13 @@ fun CatchNavHost(
         }
 
         composable(Screen.Home.route) {
-            MainScreen()
+            MainScreen(
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0)
+                    }
+                }
+            )
         }
     }
 }

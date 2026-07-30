@@ -1,5 +1,6 @@
 package com.umc.catchandroid.presentation.component
 
+import com.umc.catchandroid.domain.model.Spec
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -27,5 +28,43 @@ sealed class Screen(val route: String) {
     object WebView : Screen("web_view/{url}") {
         fun createRoute(url: String) = "web_view/${URLEncoder.encode(url, "UTF-8")}"
         fun decodeUrl(encoded: String) = URLDecoder.decode(encoded, "UTF-8")
+    }
+
+    // 마이페이지 하위
+    object KeywordManage : Screen("keyword_manage")
+    object SchoolInfoEdit : Screen("school_info_edit")
+    object NotificationSettings : Screen("notification_settings")
+    object SpecLog : Screen("spec_log")
+    object SpecAdd : Screen("spec_add")
+    object SpecDetail : Screen("spec_detail/{specData}") {
+        private const val DELIMITER = "|||"
+
+        fun createRoute(spec: Spec): String {
+            val raw = listOf(
+                spec.specId.toString(),
+                spec.category,
+                spec.title,
+                spec.organization,
+                spec.specDate,
+                spec.scoreOrGrade ?: "",
+                spec.memo ?: ""
+            ).joinToString(DELIMITER)
+            return "spec_detail/${URLEncoder.encode(raw, "UTF-8")}"
+        }
+
+        fun decodeSpec(encoded: String): Spec {
+            val raw = URLDecoder.decode(encoded, "UTF-8")
+            val parts = raw.split(DELIMITER)
+            return Spec(
+                specId = parts[0].toLong(),
+                category = parts[1],
+                categoryTag = "",
+                title = parts[2],
+                organization = parts[3],
+                specDate = parts[4],
+                scoreOrGrade = parts[5].ifEmpty { null },
+                memo = parts[6].ifEmpty { null }
+            )
+        }
     }
 }
