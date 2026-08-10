@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.R
+import com.umc.catchandroid.presentation.component.NotificationBellIcon
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchSecondaryLight
 import com.umc.catchandroid.ui.theme.CatchTextBody
@@ -65,6 +66,10 @@ fun MyPageScreen(
     onSchoolInfoClick: () -> Unit = {},
     onNotificationSettingsClick: () -> Unit = {},
     onSpecLogClick: () -> Unit = {},
+    onScrapClick: () -> Unit = {},
+    onSupportNoticeClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+    hasUnreadNotification: Boolean = false,
     viewModel: MyPageViewModel = hiltViewModel()
 ) {
     val profile by viewModel.userProfile.collectAsState()
@@ -86,10 +91,9 @@ fun MyPageScreen(
                 color = CatchTextTitle,
                 modifier = Modifier.align(Alignment.Center)
             )
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "알림",
-                tint = CatchPrimary,
+            NotificationBellIcon(
+                hasUnread = hasUnreadNotification,
+                onClick = onNotificationClick,
                 modifier = Modifier.align(Alignment.CenterEnd)
             )
         }
@@ -168,12 +172,12 @@ fun MyPageScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // 메뉴 리스트
-                MenuRow(icon = Icons.Default.Star, label = "스크랩")
+                MenuRow(icon = Icons.Default.Star, label = "스크랩", onClick = onScrapClick)
                 MenuRow(icon = Icons.Default.Assignment, label = "스펙 로그", onClick = onSpecLogClick)
                 MenuRow(icon = Icons.Default.Bookmark, label = "관심 키워드", onClick = onKeywordManageClick)
                 MenuRow(icon = Icons.Default.Notifications, label = "알림 설정", onClick = onNotificationSettingsClick)
                 MenuRow(icon = Icons.Default.School, label = "학교 정보 수정", onClick = onSchoolInfoClick)
-                MenuRow(icon = Icons.Default.Info, label = "공지사항 · FAQ")
+                MenuRow(icon = Icons.Default.Info, label = "공지사항 · FAQ", onClick = onSupportNoticeClick)
                 MenuRow(icon = Icons.Default.HelpOutline, label = "문의하기")
 
                 Spacer(modifier = Modifier.height(16.dp))

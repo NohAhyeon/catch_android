@@ -21,7 +21,7 @@ class SpecRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addSpec(spec: Spec): Pair<SpecCategoryCounts?, List<Spec>> {
-        val result = specApiService.addSpec(spec.toRequest()).result!!
+        val result = specApiService.addSpec(spec.toRequest(), page = 0, size = 20).result!!
         return result.categoryCounts?.toDomain() to result.content.map { it.toDomain() }
     }
 

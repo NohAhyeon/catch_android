@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.umc.catchandroid.presentation.component.NotificationBellIcon
 import com.umc.catchandroid.presentation.home.NoticeItem
 import com.umc.catchandroid.ui.theme.CatchDivider
 import com.umc.catchandroid.ui.theme.CatchPrimary
@@ -43,6 +43,8 @@ import androidx.compose.foundation.layout.width
 @Composable
 fun SearchScreen(
     onNoticeClick: (Long) -> Unit,
+    onNotificationClick: () -> Unit = {},
+    hasUnreadNotification: Boolean = false,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val keyword by viewModel.keyword.collectAsState()
@@ -61,10 +63,9 @@ fun SearchScreen(
                 color = CatchTextTitle,
                 modifier = Modifier.align(Alignment.Center)
             )
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "알림",
-                tint = CatchPrimary,
+            NotificationBellIcon(
+                hasUnread = hasUnreadNotification,
+                onClick = onNotificationClick,
                 modifier = Modifier.align(Alignment.CenterEnd)
             )
         }

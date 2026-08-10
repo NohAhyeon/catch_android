@@ -67,4 +67,23 @@ class NoticeRepositoryImpl @Inject constructor(
             false
         }
     }
+
+    override suspend fun getScraps(page: Int, size: Int): List<Notice> {
+        return try {
+            val response = api.getScraps(page, size)
+            response.result?.content?.map {
+                Notice(
+                    noticeId = it.noticeId,
+                    categoryTag = it.categoryTag,
+                    title = it.title,
+                    source = it.source,
+                    createdAt = it.createdAt,
+                    deadlineAt = it.deadlineAt
+                )
+            } ?: emptyList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
 }

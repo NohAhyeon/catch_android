@@ -20,7 +20,9 @@ interface SpecApiService {
 
     @POST("api/v1/specs")
     suspend fun addSpec(
-        @Body request: SpecUpsertRequest
+        @Body request: SpecUpsertRequest,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
     ): ApiResponse<SpecListResult>
 
     @PUT("api/v1/specs/{specId}")

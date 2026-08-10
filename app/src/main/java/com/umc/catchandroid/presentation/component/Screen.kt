@@ -13,6 +13,10 @@ sealed class Screen(val route: String) {
     object OnboardingProfile : Screen("onboarding_profile/{universityId}") {
         fun createRoute(universityId: Long) = "onboarding_profile/$universityId"
     }
+
+    object DepartmentSearch : Screen("department_search/{universityId}") {
+        fun createRoute(universityId: Long) = "department_search/$universityId"
+    }
     object OnboardingKeyword : Screen("onboarding_keyword")
 
     // 메인 (하단 탭)
@@ -67,4 +71,7 @@ sealed class Screen(val route: String) {
             )
         }
     }
+    object Scrap : Screen("scrap")
+    object Notification : Screen("notification")
+    object SupportNotice : Screen("support_notice")
 }

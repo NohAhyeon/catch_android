@@ -4,20 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,23 +37,24 @@ import com.umc.catchandroid.ui.theme.CatchTextBody
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
 
+// label과 서버에 보낼 grade 숫자 매핑 (졸업유예는 5로 전송)
+private val gradeOptions = listOf(
+    "1학년" to 1,
+    "2학년" to 2,
+    "3학년" to 3,
+    "4학년" to 4,
+    "5학년 이상" to 5
+)
+
 @Composable
 fun OnboardingProfileScreen(
     universityId: Long,
+    selectedDepartment: Department?,
+    onDepartmentSearchClick: () -> Unit,
     onNext: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    val departments by viewModel.departments.collectAsState()
-
-    var departmentSearch by remember { mutableStateOf("") }
-    var selectedDepartment by remember { mutableStateOf<Department?>(null) }
-    var grade by remember { mutableStateOf("") }
-
-    LaunchedEffect(departmentSearch) {
-        if (departmentSearch.length >= 1) {
-            viewModel.loadDepartments(universityId, departmentSearch)
-        }
-    }
+    var selectedGrade by remember { mutableStateOf<Int?>(null) }
 
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Text(
@@ -82,66 +81,56 @@ fun OnboardingProfileScreen(
             color = CatchTextBody,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        OutlinedTextField(
-            value = departmentSearch,
-            onValueChange = {
-                departmentSearch = it
-                selectedDepartment = null
-            },
-            placeholder = { Text("학과 검색 (예:컴퓨터)", color = CatchTextCaption) },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = CatchPrimary,
-                unfocusedBorderColor = CatchInactive
-            )
-        )
 
-        // 검색 결과 드롭다운 (선택 전까지만 표시)
-        if (selectedDepartment == null && departments.isNotEmpty()) {
-            LazyColumn(
+        // 학과 검색 필드 (클릭 시 검색 화면으로 이동)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onDepartmentSearchClick() }
+                .background(Color.White, RoundedCornerShape(12.dp))
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-                    .padding(bottom = 16.dp)
+                    .weight(1f)
+                    .padding(16.dp)
             ) {
-                items(departments) { dept ->
-                    Text(
-                        text = dept.departmentName,
-                        fontSize = 14.sp,
-                        color = CatchTextTitle,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                selectedDepartment = dept
-                                departmentSearch = dept.departmentName
-                            }
-                            .padding(vertical = 10.dp)
-                    )
-                }
+                Text(
+                    text = selectedDepartment?.departmentName ?: "학과 검색 (예: 컴퓨터)",
+                    fontSize = 15.sp,
+                    color = if (selectedDepartment != null) CatchTextTitle else CatchTextCaption
+                )
             }
-        } else {
-            Box(modifier = Modifier.padding(bottom = 24.dp)) {}
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = "학과 검색으로 이동",
+                tint = CatchTextCaption,
+                modifier = Modifier.padding(end = 12.dp)
+            )
         }
+        HorizontalDivider(color = CatchInactive, thickness = 1.dp)
 
         Text(
             text = "학년",
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = CatchTextBody,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
         )
-        OutlinedTextField(
-            value = grade,
-            onValueChange = { grade = it },
-            placeholder = { Text("3학년", color = CatchTextCaption) },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = CatchPrimary,
-                unfocusedBorderColor = CatchInactive
-            )
-        )
+
+        // 학년 선택 칩
+        Row(modifier = Modifier.fillMaxWidth()) {
+            gradeOptions.forEachIndexed { index, (label, value) ->
+                GradeChip(
+                    text = label,
+                    selected = selectedGrade == value,
+                    onClick = { selectedGrade = value },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = if (index != gradeOptions.lastIndex) 6.dp else 0.dp)
+                )
+            }
+        }
 
         Column(modifier = Modifier.weight(1f)) {}
 
@@ -159,12 +148,11 @@ fun OnboardingProfileScreen(
                 )
                 .clickable {
                     val deptId = selectedDepartment?.departmentId
-                    val gradeNumber = grade.filter { it.isDigit() }.toIntOrNull() ?: 0
-                    if (deptId != null) {
+                    val gradeNumber = selectedGrade
+                    if (deptId != null && gradeNumber != null) {
                         viewModel.saveProfile(deptId, gradeNumber)
                         onNext()
                     }
-                    // deptId == null이면 리스트에서 학과를 선택하지 않은 상태 → 무시 (또는 추후 안내 메시지 추가)
                 }
         ) {
             Text(
@@ -174,5 +162,31 @@ fun OnboardingProfileScreen(
                 fontWeight = FontWeight.Bold
             )
         }
+    }
+}
+
+@Composable
+private fun GradeChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .height(44.dp)
+            .background(
+                color = if (selected) CatchPrimary else Color.White,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .clickable(onClick = onClick)
+    ) {
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            color = if (selected) Color.White else CatchTextCaption
+        )
     }
 }

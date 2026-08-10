@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,8 +38,24 @@ class HomeViewModel @Inject constructor(
     private fun loadNotices() {
         viewModelScope.launch {
             _isLoading.value = true
-            _notices.value = noticeRepository.getNotices(page = 0, size = 20)
+            val result = noticeRepository.getNotices(page = 0, size = 20)
+            _notices.value = result.sortedWith(
+                compareBy(
+                    { notice -> sortGroup(notice.deadlineAt) },
+                    { notice -> notice.deadlineAt ?: "" }
+                )
+            )
             _isLoading.value = false
+        }
+    }
+
+    private fun sortGroup(deadlineAt: String?): Int {
+        if (deadlineAt == null) return 1
+        return try {
+            val date = LocalDate.parse(deadlineAt.substring(0, 10), DateTimeFormatter.ISO_DATE)
+            if (date.isBefore(LocalDate.now())) 2 else 0
+        } catch (e: Exception) {
+            1
         }
     }
 

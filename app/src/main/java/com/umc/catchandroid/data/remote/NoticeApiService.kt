@@ -48,4 +48,10 @@ interface NoticeApiService {
         @Query("year") year: String,
         @Query("month") month: String
     ): ApiResponse<CalendarDatesResult>
+
+    @GET("api/v1/notices/scraps")
+    suspend fun getScraps(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): ApiResponse<NoticeListResult>
 }

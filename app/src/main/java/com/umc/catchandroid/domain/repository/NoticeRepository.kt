@@ -7,4 +7,5 @@ interface NoticeRepository {
     suspend fun getNotices(page: Int, size: Int): List<Notice>
     suspend fun getNoticeDetail(noticeId: Long): NoticeDetail?
     suspend fun toggleScrap(noticeId: Long): Boolean
+    suspend fun getScraps(page: Int, size: Int): List<Notice>
 }

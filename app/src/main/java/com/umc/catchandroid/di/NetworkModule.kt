@@ -15,6 +15,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
+import com.umc.catchandroid.data.remote.NotificationApiService
+import com.umc.catchandroid.data.remote.SupportApiService
+
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -70,5 +73,17 @@ object NetworkModule {
     @Singleton
     fun provideSpecApiService(retrofit: Retrofit): SpecApiService {
         return retrofit.create(SpecApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationApiService(retrofit: Retrofit): NotificationApiService {
+        return retrofit.create(NotificationApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupportApiService(retrofit: Retrofit): SupportApiService {
+        return retrofit.create(SupportApiService::class.java)
     }
 }

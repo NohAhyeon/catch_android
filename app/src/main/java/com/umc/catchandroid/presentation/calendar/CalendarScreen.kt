@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.umc.catchandroid.presentation.component.NotificationBellIcon
 import com.umc.catchandroid.presentation.home.NoticeItem
 import com.umc.catchandroid.ui.theme.CatchDeadlineSoon
 import com.umc.catchandroid.ui.theme.CatchInactive
@@ -57,6 +57,8 @@ private val weekDays = listOf("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa")
 @Composable
 fun CalendarScreen(
     onNoticeClick: (Long) -> Unit,
+    onNotificationClick: () -> Unit = {},
+    hasUnreadNotification: Boolean = false,
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val yearMonth by viewModel.yearMonth.collectAsState()
@@ -80,10 +82,9 @@ fun CalendarScreen(
                 color = CatchTextTitle,
                 modifier = Modifier.align(Alignment.Center)
             )
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "알림",
-                tint = CatchPrimary,
+            NotificationBellIcon(
+                hasUnread = hasUnreadNotification,
+                onClick = onNotificationClick,
                 modifier = Modifier.align(Alignment.CenterEnd)
             )
         }
