@@ -117,9 +117,11 @@ fun MyPageScreen(
                     modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
                 )
 
-                // 프로필 카드
+                // 프로필 카드 - 클릭하면 학교 정보 수정으로 이동
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSchoolInfoClick() },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = CatchSecondaryLight)
                 ) {
@@ -159,14 +161,29 @@ fun MyPageScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 통계 3개 - 카드 스타일
+                // 통계 3개 - 카드 스타일, 각각 클릭하면 해당 페이지로 이동
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatCard(count = user.scrapCount, label = "스크랩", modifier = Modifier.weight(1f))
-                    StatCard(count = user.keywordCount, label = "관심키워드", modifier = Modifier.weight(1f))
-                    StatCard(count = user.readCount, label = "스펙로그", modifier = Modifier.weight(1f))
+                    StatCard(
+                        count = user.scrapCount,
+                        label = "스크랩",
+                        onClick = onScrapClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        count = user.keywordCount,
+                        label = "관심키워드",
+                        onClick = onKeywordManageClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        count = user.readCount,
+                        label = "스펙로그",
+                        onClick = onSpecLogClick,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -235,9 +252,14 @@ fun MyPageScreen(
 }
 
 @Composable
-private fun StatCard(count: Int, label: String, modifier: Modifier = Modifier) {
+private fun StatCard(
+    count: Int,
+    label: String,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)

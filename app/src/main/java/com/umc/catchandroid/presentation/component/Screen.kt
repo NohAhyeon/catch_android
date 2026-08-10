@@ -7,6 +7,9 @@ import java.net.URLEncoder
 sealed class Screen(val route: String) {
     // 인증/온보딩
     object Login : Screen("login")
+    object Splash : Screen("splash?provider={provider}") {
+        fun createRoute(provider: String = "kakao") = "splash?provider=$provider"
+    }
     object OnboardingUniversity : Screen("onboarding_university/{provider}") {
         fun createRoute(provider: String) = "onboarding_university/$provider"
     }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
@@ -26,7 +27,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,12 +34,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchSecondaryLight
@@ -148,28 +148,35 @@ fun NoticeDetailScreen(
                 color = CatchTextCaption
             )
 
-            // AI 요약 카드
-            notice.aiSummary?.let { summary ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = CatchSecondaryLight)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = CatchPrimary, modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "AI 3줄 요약",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = CatchPrimary,
-                                modifier = Modifier.padding(start = 6.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
+            // AI 요약 카드 - aiSummary가 null이어도 카드는 보여주고 준비중 문구 표시
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = CatchSecondaryLight)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = CatchPrimary, modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "AI 3줄 요약",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = CatchPrimary,
+                            modifier = Modifier.padding(start = 6.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    val summary = notice.aiSummary
+                    if (summary != null) {
                         SummaryRow(label = "지원 자격", value = summary.eligibility)
                         SummaryRow(label = "혜택", value = summary.benefit)
                         SummaryRow(label = "마감", value = summary.deadline)
+                    } else {
+                        Text(
+                            text = "AI 요약을 준비 중이에요",
+                            fontSize = 12.sp,
+                            color = CatchTextCaption
+                        )
                     }
                 }
             }
@@ -191,13 +198,34 @@ fun NoticeDetailScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            OutlinedButton(
-                onClick = { onOpenOriginal(notice.originalUrl) },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp)
+            // 원문에서 보기 버튼 - 위에서 아래로 점점 진해지는 세로 그라데이션
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(CatchSecondaryLight, CatchPrimary)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .clickable { onOpenOriginal(notice.originalUrl) },
+                contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.height(16.dp))
-                Text("원문에서 보기", modifier = Modifier.padding(start = 8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "원문에서 보기",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.height(20.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

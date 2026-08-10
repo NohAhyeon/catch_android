@@ -180,7 +180,8 @@ fun HomeScreen(
                                     colors = CardDefaults.cardColors(containerColor = Color.White)
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp)) {
-                                        DDayBadge(dDay = calculateDDay(notice.deadlineAt))
+                                        // 오늘 마감 카드는 전부 D-0이므로 항상 빨간 배지
+                                        DDayBadge(dDay = calculateDDay(notice.deadlineAt), dimmed = false)
                                         Text(
                                             text = notice.title,
                                             fontSize = 12.sp,
@@ -225,8 +226,10 @@ fun NoticeItem(notice: Notice, isDueToday: Boolean = false, onClick: () -> Unit)
     val textColor = if (notice.isRead) CatchTextCaption else CatchTextTitle
     val badgeBg = if (notice.isRead) CatchInactive else CatchSecondaryLight
     val badgeText = if (notice.isRead) CatchTextCaption else CatchPrimary
-    val ddayBg = if (notice.isRead) CatchInactive else CatchDeadlineSoon
-    val ddayText = if (notice.isRead) CatchTextCaption else Color.White
+
+    // D-0(오늘 마감)일 때만 빨간색, 그 외(D-1 이상/마감/상시)는 회색
+    val ddayBg = if (isDueToday) CatchDeadlineSoon else CatchInactive
+    val ddayText = if (isDueToday) Color.White else CatchTextCaption
 
     // 왼쪽 바 색: 오늘 마감이면 빨간색 최우선, 그 다음 읽음 여부로 결정
     val sideBarColor = when {
