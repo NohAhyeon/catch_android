@@ -29,7 +29,7 @@
 
 ## 코드 컨벤션
 - Kotlin 공식 스타일 가이드 기준
-- 패키지 구조: `data`(local, remote, repository) / `domain`(model, repository, usecase) / `presentation`(component, home, notice, search, calendar, mypage, onboarding) / `util`
+- 패키지 구조: `data`(local, remote, repository) / `domain`(model, repository, usecase) / `presentation`(component, home, notice, search, calendar, mypage, notification, onboarding) / `util`
 - 네이밍 규칙: 변수/함수는 camelCase, 리소스 파일은 snake_case
 
 ## Compose 컨벤션
