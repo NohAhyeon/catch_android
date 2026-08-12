@@ -1,4 +1,5 @@
 package com.umc.catchandroid.data.remote
 
-class DeviceTokenRequest {
-}
+data class DeviceTokenRequest(
+    val pushToken: String
+)

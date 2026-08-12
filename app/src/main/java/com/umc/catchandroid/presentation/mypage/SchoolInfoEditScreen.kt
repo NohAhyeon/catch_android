@@ -45,6 +45,7 @@ import com.umc.catchandroid.ui.theme.CatchTextTitle
 @Composable
 fun SchoolInfoEditScreen(
     onBack: () -> Unit,
+    onSaved: () -> Unit = onBack,
     viewModel: SchoolInfoEditViewModel = hiltViewModel()
 ) {
     val universities by viewModel.universities.collectAsState()
@@ -235,7 +236,8 @@ fun SchoolInfoEditScreen(
                         .background(color = CatchPrimary, shape = RoundedCornerShape(12.dp))
                         .clickable {
                             if (selectedUniversity != null && selectedDepartment != null) {
-                                viewModel.save(onDone = onBack)
+                                // 뒤로가기(onBack)가 아니라 저장 완료 신호(onSaved)로 보냄 -> 홈 새로고침 트리거용
+                                viewModel.save(onDone = onSaved)
                             }
                         }
                 ) {

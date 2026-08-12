@@ -52,6 +52,7 @@ fun KeywordManageScreen(
     val selectedRecommended by viewModel.selectedRecommended.collectAsState()
     val customKeywords by viewModel.customKeywords.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
     var customInput by remember { mutableStateOf("") }
 
     val totalCount = selectedRecommended.size + customKeywords.size
@@ -170,7 +171,7 @@ fun KeywordManageScreen(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 32.dp, bottom = 24.dp)
+                        .padding(top = 32.dp)
                         .height(56.dp)
                         .background(color = CatchPrimary, shape = RoundedCornerShape(12.dp))
                         .clickable { viewModel.save(onDone = onBack) }
@@ -182,6 +183,17 @@ fun KeywordManageScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
+
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage ?: "",
+                        fontSize = 13.sp,
+                        color = Color(0xFFE05353),
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

@@ -66,6 +66,7 @@ fun SupportNoticeScreen(
     val notices by viewModel.notices.collectAsState()
     val faqs by viewModel.faqs.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     var selectedTab by remember { mutableStateOf(SupportTab.NOTICE) }
     val listState = rememberLazyListState()
@@ -127,46 +128,68 @@ fun SupportNoticeScreen(
             )
         }
 
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = CatchPrimary)
+        when {
+            isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = CatchPrimary)
+                }
             }
-            return
-        }
+            errorMessage != null -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = errorMessage ?: "",
+                            fontSize = 14.sp,
+                            color = CatchTextCaption
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(CatchPrimary, RoundedCornerShape(10.dp))
+                                .clickable { viewModel.load() }
+                                .padding(horizontal = 20.dp, vertical = 10.dp)
+                        ) {
+                            Text(text = "다시 시도", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+            else -> {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "운영팀 공지",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = CatchTextTitle,
+                            modifier = Modifier.padding(bottom = 10.dp, top = 8.dp)
+                        )
+                    }
+                    items(notices) { notice ->
+                        SupportNoticeItem(notice = notice)
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)
-        ) {
-            item {
-                Text(
-                    text = "운영팀 공지",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = CatchTextTitle,
-                    modifier = Modifier.padding(bottom = 10.dp, top = 8.dp)
-                )
-            }
-            items(notices) { notice ->
-                SupportNoticeItem(notice = notice)
-                Spacer(modifier = Modifier.height(10.dp))
-            }
+                    item {
+                        Text(
+                            text = "FAQ",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = CatchTextTitle,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)
+                        )
+                    }
+                    items(faqs) { faq ->
+                        FaqItem(faq = faq, onContactClick = onContactClick)
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
 
-            item {
-                Text(
-                    text = "FAQ",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = CatchTextTitle,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)
-                )
+                    item { Spacer(modifier = Modifier.height(24.dp)) }
+                }
             }
-            items(faqs) { faq ->
-                FaqItem(faq = faq, onContactClick = onContactClick)
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            item { Spacer(modifier = Modifier.height(24.dp)) }
         }
     }
 }

@@ -74,6 +74,38 @@ sealed class Screen(val route: String) {
             )
         }
     }
+    // 스펙 상세 화면 상단 요약 카드를 눌렀을 때 이동하는 전체 필드 수정 화면
+    object SpecFullEdit : Screen("spec_full_edit/{specData}") {
+        private const val DELIMITER = "|||"
+
+        fun createRoute(spec: Spec): String {
+            val raw = listOf(
+                spec.specId.toString(),
+                spec.category,
+                spec.title,
+                spec.organization,
+                spec.specDate,
+                spec.scoreOrGrade ?: "",
+                spec.memo ?: ""
+            ).joinToString(DELIMITER)
+            return "spec_full_edit/${URLEncoder.encode(raw, "UTF-8")}"
+        }
+
+        fun decodeSpec(encoded: String): Spec {
+            val raw = URLDecoder.decode(encoded, "UTF-8")
+            val parts = raw.split(DELIMITER)
+            return Spec(
+                specId = parts[0].toLong(),
+                category = parts[1],
+                categoryTag = "",
+                title = parts[2],
+                organization = parts[3],
+                specDate = parts[4],
+                scoreOrGrade = parts[5].ifEmpty { null },
+                memo = parts[6].ifEmpty { null }
+            )
+        }
+    }
     object Scrap : Screen("scrap")
     object Notification : Screen("notification")
     object SupportNotice : Screen("support_notice")

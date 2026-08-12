@@ -63,6 +63,12 @@ fun SpecLogScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
+    // 스펙 추가/수정/삭제 화면에서 뒤로 돌아왔을 때 목록을 최신 상태로 새로고침
+    // - 다른 화면으로 이동했다가 이 화면으로 돌아오면 composition에 다시 들어오면서 재실행됨
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.loadSpecs()
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp)) {

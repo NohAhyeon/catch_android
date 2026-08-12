@@ -36,7 +36,16 @@ class NotificationSettingsViewModel @Inject constructor(
     fun toggleAll(checked: Boolean) {
         val current = _settings.value ?: return
         val updated = if (checked) {
-            current.copy(isAll = true)
+            // 마스터 켜면 하위 알림도 다 같이 켜줌 (끌 때와 대칭)
+            current.copy(
+                isAll = true,
+                isClosing = true,
+                isKeyword = true,
+                scholarship = true,
+                extracurricular = true,
+                academic = true,
+                employment = true
+            )
         } else {
             // 마스터 끄면 서버에서 하위 알림도 다 꺼져있어야 함 (ALARM4002 방지)
             current.copy(

@@ -1,20 +1,19 @@
 package com.umc.catchandroid.presentation.component
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -34,6 +33,10 @@ val bottomNavItems = listOf(
     BottomNavItem(Screen.Calendar, "캘린더", R.drawable.ic_calendar),
     BottomNavItem(Screen.MyPage, "마이", R.drawable.ic_mypage)
 )
+
+// 아이콘 크기: 바깥 Box와 안쪽 Image 크기를 반드시 동일하게 유지해야 함
+// (부모 Box의 크기 제약이 항상 우선 적용되므로, 안쪽 Image만 키워도 소용없음)
+private val NAV_ICON_SIZE = 48.dp
 
 @Composable
 fun BottomNavBar(navController: NavController) {
@@ -57,21 +60,20 @@ fun BottomNavBar(navController: NavController) {
                     }
                 },
                 icon = {
-                    Image(
-                        painter = painterResource(id = item.iconRes),
-                        contentDescription = item.label,
-                        colorFilter = ColorFilter.tint(tintColor),
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Box(
+                        modifier = Modifier.size(NAV_ICON_SIZE),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = item.iconRes),
+                            contentDescription = item.label,
+                            colorFilter = ColorFilter.tint(tintColor),
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.size(NAV_ICON_SIZE)
+                        )
+                    }
                 },
-                label = {
-                    Text(
-                        text = item.label,
-                        fontSize = 12.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = tintColor
-                    )
-                },
+                label = null,
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = androidx.compose.ui.graphics.Color.Transparent
                 )

@@ -1,7 +1,9 @@
 package com.umc.catchandroid.data.remote
 
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface NotificationApiService {
@@ -13,4 +15,9 @@ interface NotificationApiService {
 
     @PATCH("api/v1/notifications/read")
     suspend fun markAllAsRead(): ApiResponse<Unit>
+
+    @POST("api/v1/users/device")
+    suspend fun registerDeviceToken(
+        @Body request: DeviceTokenRequest
+    ): ApiResponse<Unit>
 }

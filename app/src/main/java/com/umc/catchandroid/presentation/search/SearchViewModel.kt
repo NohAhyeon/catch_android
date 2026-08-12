@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,7 +27,12 @@ class SearchViewModel @Inject constructor(
     private val _results = MutableStateFlow<List<Notice>>(emptyList())
     val results: StateFlow<List<Notice>> = _results.asStateFlow()
 
-    // DataStore에서 읽어와서 자동으로 갱신되는 상태 - 앱 재시작해도 유지됨
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     val recentSearches: StateFlow<List<String>> = recentSearchManager.recentSearches
         .stateIn(
             scope = viewModelScope,
@@ -42,8 +48,18 @@ class SearchViewModel @Inject constructor(
         if (query.isBlank()) return
         _keyword.value = query
         viewModelScope.launch {
-            recentSearchManager.addSearch(query)
-            _results.value = searchRepository.searchNotices(query)
+            _isSearching.value = true
+            _errorMessage.value = null
+            try {
+                recentSearchManager.addSearch(query)
+                _results.value = searchRepository.searchNotices(query)
+            } catch (e: IOException) {
+                _errorMessage.value = "네트워크 연결을 확인해주세요"
+            } catch (e: Exception) {
+                _errorMessage.value = "검색 중 문제가 발생했어요. 다시 시도해주세요"
+            } finally {
+                _isSearching.value = false
+            }
         }
     }
 

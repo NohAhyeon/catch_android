@@ -1,5 +1,6 @@
 package com.umc.catchandroid.presentation.mypage
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,10 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
@@ -44,19 +47,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.R
 import com.umc.catchandroid.presentation.component.NotificationBellIcon
+import com.umc.catchandroid.ui.theme.CatchInactive
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchSecondaryLight
 import com.umc.catchandroid.ui.theme.CatchTextBody
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
 import androidx.compose.ui.draw.clip
+
+private const val SUPPORT_EMAIL = "wnsrud2002@naver.com"
 
 
 @Composable
@@ -73,10 +83,15 @@ fun MyPageScreen(
     viewModel: MyPageViewModel = hiltViewModel()
 ) {
     val profile by viewModel.userProfile.collectAsState()
+    val specCount by viewModel.specCount.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showContactDialog by remember { mutableStateOf(false) }
+    var showWithdrawDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.refreshProfile()
+        viewModel.loadSpecCount()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -179,7 +194,8 @@ fun MyPageScreen(
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
-                        count = user.readCount,
+                        // 스펙 개수는 프로필 응답에 없어서(readCount는 "읽은 공지 수"라 별개) SpecRepository에서 따로 불러옴
+                        count = specCount,
                         label = "스펙로그",
                         onClick = onSpecLogClick,
                         modifier = Modifier.weight(1f)
@@ -195,7 +211,7 @@ fun MyPageScreen(
                 MenuRow(icon = Icons.Default.Notifications, label = "알림 설정", onClick = onNotificationSettingsClick)
                 MenuRow(icon = Icons.Default.School, label = "학교 정보 수정", onClick = onSchoolInfoClick)
                 MenuRow(icon = Icons.Default.Info, label = "공지사항 · FAQ", onClick = onSupportNoticeClick)
-                MenuRow(icon = Icons.Default.HelpOutline, label = "문의하기")
+                MenuRow(icon = Icons.Default.HelpOutline, label = "문의하기", onClick = { showContactDialog = true })
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -207,9 +223,40 @@ fun MyPageScreen(
                         .clickable { showLogoutDialog = true }
                         .padding(vertical = 8.dp)
                 )
+                Text(
+                    text = "탈퇴하기",
+                    fontSize = 13.sp,
+                    color = Color(0xFFE05353),
+                    modifier = Modifier
+                        .clickable { showWithdrawDialog = true }
+                        .padding(vertical = 8.dp)
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
-            } ?: Text("로딩 중...", color = CatchTextCaption)
+            } ?: run {
+                if (errorMessage != null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = errorMessage ?: "",
+                                fontSize = 14.sp,
+                                color = CatchTextCaption
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(CatchPrimary, RoundedCornerShape(10.dp))
+                                    .clickable { viewModel.refreshProfile() }
+                                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                            ) {
+                                Text(text = "다시 시도", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                } else {
+                    Text("로딩 중...", color = CatchTextCaption)
+                }
+            }
         }
     }
 
@@ -244,6 +291,45 @@ fun MyPageScreen(
             },
             dismissButton = {
                 OutlinedButton(onClick = { showLogoutDialog = false }) {
+                    Text("취소", color = CatchTextBody)
+                }
+            }
+        )
+    }
+
+    if (showContactDialog) {
+        ContactDialog(onDismiss = { showContactDialog = false })
+    }
+
+    if (showWithdrawDialog) {
+        AlertDialog(
+            onDismissRequest = { showWithdrawDialog = false },
+            title = {
+                Text(
+                    text = "정말 탈퇴하시겠어요?",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = CatchTextTitle
+                )
+            },
+            text = {
+                Text(
+                    text = "탈퇴 시 스크랩한 공지, 키워드, 알림 이력 등 계정과 관련된 데이터가 모두 삭제되며 복구할 수 없어요.",
+                    fontSize = 13.sp,
+                    color = CatchTextCaption
+                )
+            },
+            confirmButton = {
+                Button(
+                    // 목업: 실제 탈퇴 API 연동 전이라 다이얼로그만 닫음
+                    onClick = { showWithdrawDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE05353))
+                ) {
+                    Text("탈퇴하기", color = Color.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showWithdrawDialog = false }) {
                     Text("취소", color = CatchTextBody)
                 }
             }
@@ -304,5 +390,103 @@ private fun MenuRow(icon: ImageVector, label: String, onClick: () -> Unit = {}) 
             color = CatchTextTitle,
             modifier = Modifier.padding(start = 12.dp)
         )
+    }
+}
+
+@Composable
+private fun ContactDialog(onDismiss: () -> Unit) {
+    val clipboardManager = LocalClipboardManager.current
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(CatchSecondaryLight, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.QuestionMark,
+                        contentDescription = null,
+                        tint = CatchPrimary
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "문의하기",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = CatchTextTitle
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "공지캐치 이용 중 궁금한 점이나\n불편한 점이 있으신가요?",
+                    fontSize = 13.sp,
+                    color = CatchTextBody,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 19.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "아래 이메일로 문의해 주세요.\n확인 후 답변드리겠습니다.",
+                    fontSize = 13.sp,
+                    color = CatchTextCaption,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 19.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, CatchInactive, RoundedCornerShape(12.dp))
+                        .padding(vertical = 14.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        tint = CatchPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = SUPPORT_EMAIL,
+                        fontSize = 14.sp,
+                        color = CatchTextTitle,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .background(CatchPrimary, RoundedCornerShape(12.dp))
+                        .clickable {
+                            clipboardManager.setText(AnnotatedString(SUPPORT_EMAIL))
+                        }
+                ) {
+                    Text("이메일 복사하기", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "확인",
+                    fontSize = 14.sp,
+                    color = CatchTextCaption,
+                    modifier = Modifier
+                        .clickable { onDismiss() }
+                        .padding(vertical = 4.dp)
+                )
+            }
+        }
     }
 }

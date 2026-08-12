@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,6 +24,9 @@ class KeywordManageViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     init {
         loadKeywords()
@@ -59,12 +63,31 @@ class KeywordManageViewModel @Inject constructor(
         _customKeywords.value = _customKeywords.value - keyword
     }
 
+    fun clearError() {
+        _errorMessage.value = null
+    }
+
     fun save(onDone: () -> Unit) {
+        val recommendPairs = _selectedRecommended.value.map { it to "RECOMMEND" }
+        val customPairs = _customKeywords.value.map { it to "CUSTOM" }
+        val allPairs = recommendPairs + customPairs
+
+        // 서버가 빈 키워드 목록을 400으로 거부하므로, 호출 전에 미리 막아서
+        // 사용자에게 안내 메시지를 보여줌 (크래시 방지)
+        if (allPairs.isEmpty()) {
+            _errorMessage.value = "관심 키워드를 1개 이상 선택해주세요"
+            return
+        }
+
         viewModelScope.launch {
-            val recommendPairs = _selectedRecommended.value.map { it to "RECOMMEND" }
-            val customPairs = _customKeywords.value.map { it to "CUSTOM" }
-            userRepository.updateKeywords(recommendPairs + customPairs)
-            onDone()
+            try {
+                userRepository.updateKeywords(allPairs)
+                onDone()
+            } catch (e: HttpException) {
+                _errorMessage.value = "저장에 실패했어요. 키워드를 1개 이상 선택했는지 확인해주세요"
+            } catch (e: Exception) {
+                _errorMessage.value = "저장에 실패했어요. 다시 시도해주세요"
+            }
         }
     }
 }

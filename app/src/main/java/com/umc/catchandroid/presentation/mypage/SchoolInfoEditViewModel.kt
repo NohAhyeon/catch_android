@@ -2,6 +2,7 @@ package com.umc.catchandroid.presentation.mypage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.umc.catchandroid.data.local.SchoolInfoChangeNotifier
 import com.umc.catchandroid.domain.model.Department
 import com.umc.catchandroid.domain.model.University
 import com.umc.catchandroid.domain.repository.UniversityRepository
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SchoolInfoEditViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val universityRepository: UniversityRepository
+    private val universityRepository: UniversityRepository,
+    private val schoolInfoChangeNotifier: SchoolInfoChangeNotifier
 ) : ViewModel() {
 
     private var allUniversities: List<University> = emptyList()
@@ -102,6 +104,8 @@ class SchoolInfoEditViewModel @Inject constructor(
         val gradeNumber = _grade.value.filter { it.isDigit() }.toIntOrNull() ?: return
         viewModelScope.launch {
             userRepository.updateSchoolInfo(universityId, departmentId, gradeNumber)
+            // 학교 정보가 바뀌었음을 전역으로 알림 (홈 등 다른 화면이 자동으로 새로고침)
+            schoolInfoChangeNotifier.notifyChanged()
             onDone()
         }
     }

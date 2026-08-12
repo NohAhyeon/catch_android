@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -27,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +52,8 @@ fun SearchScreen(
     val keyword by viewModel.keyword.collectAsState()
     val results by viewModel.results.collectAsState()
     val recentSearches by viewModel.recentSearches.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 상단 앱바
@@ -170,9 +174,46 @@ fun SearchScreen(
                 }
             }
 
-            items(results) { notice ->
-                NoticeItem(notice = notice, onClick = { onNoticeClick(notice.noticeId) })
-                Spacer(modifier = Modifier.height(10.dp))
+            when {
+                isSearching -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = CatchPrimary)
+                        }
+                    }
+                }
+                errorMessage != null -> {
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = errorMessage ?: "",
+                                fontSize = 13.sp,
+                                color = CatchTextCaption
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(CatchPrimary, RoundedCornerShape(10.dp))
+                                    .clickable { viewModel.search() }
+                                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                            ) {
+                                Text(text = "다시 시도", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    items(results) { notice ->
+                        NoticeItem(notice = notice, onClick = { onNoticeClick(notice.noticeId) })
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
             }
         }
     }

@@ -52,6 +52,9 @@ import com.umc.catchandroid.ui.theme.CatchTextTitle
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.runtime.LaunchedEffect
+
 private val categories = listOf("전체", "장학", "비교과", "학사", "취업")
 
 @Composable
@@ -63,12 +66,35 @@ fun HomeScreen(
 ) {
     val notices by viewModel.notices.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
     val userProfile by viewModel.userProfile.collectAsState()
     var selectedCategory by remember { mutableStateOf(categories.first()) }
 
-    if (isLoading) {
+    if (isLoading && notices.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = CatchPrimary)
+        }
+        return
+    }
+
+    if (errorMessage != null && notices.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = errorMessage ?: "",
+                    fontSize = 14.sp,
+                    color = CatchTextCaption
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .background(CatchPrimary, RoundedCornerShape(10.dp))
+                        .clickable { viewModel.refresh() }
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Text(text = "다시 시도", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
         return
     }
@@ -231,12 +257,8 @@ fun NoticeItem(notice: Notice, isDueToday: Boolean = false, onClick: () -> Unit)
     val ddayBg = if (isDueToday) CatchDeadlineSoon else CatchInactive
     val ddayText = if (isDueToday) Color.White else CatchTextCaption
 
-    // 왼쪽 바 색: 오늘 마감이면 빨간색 최우선, 그 다음 읽음 여부로 결정
-    val sideBarColor = when {
-        isDueToday -> CatchDeadlineSoon
-        notice.isRead -> CatchInactive
-        else -> CatchPrimary
-    }
+    // 왼쪽 바: 오늘 마감(D-Day)일 때만 빨간색으로 표시, 나머지는 안 보이게
+    val sideBarColor = if (isDueToday) CatchDeadlineSoon else Color.Transparent
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -245,7 +267,7 @@ fun NoticeItem(notice: Notice, isDueToday: Boolean = false, onClick: () -> Unit)
         border = BorderStroke(1.dp, CatchInactive),
         onClick = onClick
     ) {
-        Row {
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             // 왼쪽 색상 라인
             Box(
                 modifier = Modifier

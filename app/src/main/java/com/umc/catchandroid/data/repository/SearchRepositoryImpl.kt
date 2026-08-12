@@ -10,21 +10,16 @@ class SearchRepositoryImpl @Inject constructor(
 ) : SearchRepository {
 
     override suspend fun searchNotices(keyword: String): List<Notice> {
-        return try {
-            val response = api.searchNotices(searchWord = keyword)
-            response.result?.content?.map {
-                Notice(
-                    noticeId = it.noticeId,
-                    categoryTag = it.categoryTag,
-                    title = it.title,
-                    source = it.source,
-                    createdAt = it.createdAt,
-                    deadlineAt = it.deadlineAt
-                )
-            } ?: emptyList()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+        val response = api.searchNotices(searchWord = keyword)
+        return response.result?.content?.map {
+            Notice(
+                noticeId = it.noticeId,
+                categoryTag = it.categoryTag,
+                title = it.title,
+                source = it.source,
+                createdAt = it.createdAt,
+                deadlineAt = it.deadlineAt
+            )
+        } ?: emptyList()
     }
 }

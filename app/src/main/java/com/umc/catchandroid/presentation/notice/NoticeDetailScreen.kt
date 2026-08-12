@@ -57,6 +57,7 @@ fun NoticeDetailScreen(
     viewModel: NoticeDetailViewModel = hiltViewModel()
 ) {
     val detail by viewModel.detail.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(noticeId) {
@@ -101,8 +102,29 @@ fun NoticeDetailScreen(
 
         val notice = detail
         if (notice == null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = CatchPrimary)
+            if (errorMessage != null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = errorMessage ?: "",
+                            fontSize = 14.sp,
+                            color = CatchTextCaption
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(CatchPrimary, RoundedCornerShape(10.dp))
+                                .clickable { viewModel.retry() }
+                                .padding(horizontal = 20.dp, vertical = 10.dp)
+                        ) {
+                            Text(text = "다시 시도", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = CatchPrimary)
+                }
             }
             return
         }

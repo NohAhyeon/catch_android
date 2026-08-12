@@ -11,36 +11,26 @@ class SupportRepositoryImpl @Inject constructor(
 ) : SupportRepository {
 
     override suspend fun getSupportNotices(page: Int, size: Int): List<SupportNotice> {
-        return try {
-            val response = api.getSupportNotices(page, size)
-            response.result?.content?.map {
-                SupportNotice(
-                    supportNoticeId = it.supportNoticeId,
-                    title = it.title,
-                    content = it.content,
-                    createdAt = it.createdAt
-                )
-            } ?: emptyList()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+        val response = api.getSupportNotices(page, size)
+        return response.result?.content?.map {
+            SupportNotice(
+                supportNoticeId = it.supportNoticeId,
+                title = it.title,
+                content = it.content,
+                createdAt = it.createdAt
+            )
+        } ?: emptyList()
     }
 
     override suspend fun getFaqs(category: String): List<Faq> {
-        return try {
-            val response = api.getFaqs(category)
-            response.result?.content?.map {
-                Faq(
-                    faqId = it.faqId,
-                    category = it.category,
-                    question = it.question,
-                    answer = it.answer
-                )
-            } ?: emptyList()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+        val response = api.getFaqs(category)
+        return response.result?.content?.map {
+            Faq(
+                faqId = it.faqId,
+                category = it.category,
+                question = it.question,
+                answer = it.answer
+            )
+        } ?: emptyList()
     }
 }
