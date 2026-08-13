@@ -47,7 +47,7 @@ import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchSecondaryLight
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
-
+import androidx.compose.ui.graphics.Brush
 private val filterCategories = listOf("ALL" to "전체") + specCategories
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -123,10 +123,10 @@ fun SpecLogScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_skill),
+                            painter = painterResource(id = R.drawable.img_penguin_empty),
                             contentDescription = "스펙 없음",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.size(200.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
@@ -138,7 +138,7 @@ fun SpecLogScreen(
                         Text(
                             text = "첫 스펙을 등록하고 성장 기록을 관리해 보세요!",
                             fontSize = 13.sp,
-                            color = CatchTextCaption,
+                            color = CatchTextTitle,
                             modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
                         )
                         Box(
@@ -146,7 +146,12 @@ fun SpecLogScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp)
-                                .background(color = CatchPrimary, shape = RoundedCornerShape(12.dp))
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4))
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                                 .clickable { onAddClick() }
                         ) {
                             Text("+ 스펙 로그 추가하기", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)

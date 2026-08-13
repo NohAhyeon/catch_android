@@ -52,6 +52,7 @@ import com.umc.catchandroid.ui.theme.CatchTextTitle
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.graphics.Brush
 
 private val specDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -211,7 +212,12 @@ fun SpecAddScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
                     .height(56.dp)
-                    .background(color = CatchPrimary, shape = RoundedCornerShape(12.dp))
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4))
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
                     .clickable {
                         if (title.isNotBlank() && specDate.isNotBlank()) {
                             viewModel.addSpec(

@@ -1,5 +1,6 @@
 package com.umc.catchandroid.presentation.notice
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -18,8 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Card
@@ -37,10 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.umc.catchandroid.R
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchSecondaryLight
 import com.umc.catchandroid.ui.theme.CatchTextBody
@@ -95,7 +97,11 @@ fun NoticeDetailScreen(
                         context.startActivity(Intent.createChooser(shareIntent, "공유하기"))
                     }
                 }) {
-                    Icon(Icons.Default.Share, contentDescription = "공유하기", tint = CatchTextTitle)
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_share),
+                        contentDescription = "공유하기",
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
             }
         }
@@ -227,10 +233,10 @@ fun NoticeDetailScreen(
                     .height(52.dp)
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(CatchSecondaryLight, CatchPrimary)
+                            colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4))
                         ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                shape = RoundedCornerShape(12.dp)
+            )
                     .clickable { onOpenOriginal(notice.originalUrl) },
                 contentAlignment = Alignment.Center
             ) {

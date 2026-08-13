@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,6 +59,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.runtime.LaunchedEffect
 
 private val categories = listOf("전체", "장학", "비교과", "학사", "취업")
+private const val DUE_TODAY_PAGE_SIZE = 3
 
 @Composable
 fun HomeScreen(
@@ -100,7 +104,25 @@ fun HomeScreen(
     }
 
     val today = LocalDate.now()
-    val dueTodayNotices = notices.filter { notice ->
+    val todayStr = today.toString()
+
+    // "오늘 마감 공지" 카드에는 오늘 마감뿐 아니라 마감이 지나지 않은 공지 전체를
+    // D-day 가까운 순으로 보여줌 (이미 마감이 지난 공지는 제외)
+    val upcomingDeadlineNotices = notices
+        .filter { notice ->
+            notice.deadlineAt?.let {
+                try {
+                    val deadlineDate = LocalDate.parse(it.substring(0, 10), DateTimeFormatter.ISO_DATE)
+                    !deadlineDate.isBefore(today)
+                } catch (e: Exception) {
+                    false
+                }
+            } ?: false
+        }
+        .sortedBy { it.deadlineAt }
+
+    // 상단 "오늘 마감 공지 N개" 텍스트와 리스트 왼쪽 빨간 바 표시에는 정확히 오늘(D-0)인 것만 사용
+    val dueTodayIds = notices.filter { notice ->
         notice.deadlineAt?.let {
             try {
                 LocalDate.parse(it.substring(0, 10), DateTimeFormatter.ISO_DATE) == today
@@ -108,8 +130,8 @@ fun HomeScreen(
                 false
             }
         } ?: false
-    }
-    val dueTodayIds = dueTodayNotices.map { it.noticeId }.toSet()
+    }.map { it.noticeId }.toSet()
+    val dueTodayCount = dueTodayIds.size
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 상단 앱바
@@ -145,13 +167,23 @@ fun HomeScreen(
                     fontSize = 14.sp,
                     color = CatchTextBody
                 )
-                Text(
-                    text = "오늘 마감 공지 ${dueTodayNotices.size}개",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = CatchTextTitle,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
-                )
+                ) {
+                    Text(
+                        text = "오늘 마감 공지 ",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = CatchTextTitle
+                    )
+                    Text(
+                        text = "${dueTodayCount}개",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF403DE4)
+                    )
+                }
             }
 
             // 카테고리 필터 칩
@@ -168,7 +200,7 @@ fun HomeScreen(
                 }
             }
 
-            // 오늘 마감 공지 가로 스크롤 카드 (항상 표시, 없으면 빈 상태 문구)
+            // 오늘 마감 공지 - 마감 임박 공지 전체를 3개씩 페이징, 하단 점 인디케이터
             item {
                 Text(
                     text = "오늘 마감 공지",
@@ -182,7 +214,7 @@ fun HomeScreen(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = CatchSecondaryLight)
                 ) {
-                    if (dueTodayNotices.isEmpty()) {
+                    if (upcomingDeadlineNotices.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -190,31 +222,77 @@ fun HomeScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "오늘 마감인 공지가 없어요",
+                                text = "다가오는 마감 공지가 없어요",
                                 fontSize = 13.sp,
                                 color = CatchTextCaption
                             )
                         }
                     } else {
-                        LazyRow(modifier = Modifier.padding(12.dp)) {
-                            items(dueTodayNotices) { notice ->
-                                Card(
+                        val pages = upcomingDeadlineNotices.chunked(DUE_TODAY_PAGE_SIZE)
+                        val pagerState = rememberPagerState(pageCount = { pages.size })
+
+                        Column {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.padding(vertical = 12.dp)
+                            ) { page ->
+                                Row(modifier = Modifier.padding(horizontal = 12.dp)) {
+                                    pages[page].forEach { notice ->
+                                        val isToday = dueTodayIds.contains(notice.noticeId)
+                                        Card(
+                                            modifier = Modifier
+                                                .width(120.dp)
+                                                .padding(end = 8.dp),
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                                        ) {
+                                            Card(
+                                                modifier = Modifier
+                                                    .width(120.dp)
+                                                    .padding(end = 8.dp),
+                                                shape = RoundedCornerShape(12.dp),
+                                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                                onClick = {
+                                                    viewModel.markAsRead(notice.noticeId)
+                                                    onNoticeClick(notice.noticeId)
+                                                }
+                                            ) {
+                                                Column(modifier = Modifier.padding(10.dp)) {
+                                                    DDayBadge(
+                                                        dDay = calculateDDay(notice.deadlineAt),
+                                                        dimmed = !isToday
+                                                    )
+                                                    Text(
+                                                        text = notice.title,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Medium,
+                                                        maxLines = 2,
+                                                        color = CatchTextTitle,
+                                                        modifier = Modifier.padding(top = 6.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (pagerState.pageCount > 1) {
+                                Row(
                                     modifier = Modifier
-                                        .width(120.dp)
-                                        .padding(end = 8.dp),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                                        .fillMaxWidth()
+                                        .padding(bottom = 12.dp),
+                                    horizontalArrangement = Arrangement.Center
                                 ) {
-                                    Column(modifier = Modifier.padding(10.dp)) {
-                                        // 오늘 마감 카드는 전부 D-0이므로 항상 빨간 배지
-                                        DDayBadge(dDay = calculateDDay(notice.deadlineAt), dimmed = false)
-                                        Text(
-                                            text = notice.title,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            maxLines = 2,
-                                            color = CatchTextTitle,
-                                            modifier = Modifier.padding(top = 6.dp)
+                                    repeat(pagerState.pageCount) { index ->
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(horizontal = 3.dp)
+                                                .size(6.dp)
+                                                .background(
+                                                    color = if (pagerState.currentPage == index) Color(0xFF403DE4) else Color(0xFFBFBFBF),
+                                                    shape = CircleShape
+                                                )
                                         )
                                     }
                                 }
@@ -225,12 +303,24 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // 공지 리스트 (카테고리 필터 적용)
-            val filteredNotices = if (selectedCategory == "전체") {
+            // 공지 리스트 (카테고리 필터 적용, 마감 임박순 정렬)
+            val filteredNotices = (if (selectedCategory == "전체") {
                 notices
             } else {
                 notices.filter { it.categoryTag == selectedCategory }
-            }
+            }).sortedWith(
+                compareBy(
+                    { notice ->
+                        val deadline = notice.deadlineAt
+                        when {
+                            deadline == null -> 1
+                            deadline.substring(0, 10) < todayStr -> 2
+                            else -> 0 // 아직 안 마감된 것 - 맨 앞
+                        }
+                    },
+                    { it.deadlineAt ?: "" } // 같은 그룹 내에서는 마감일 오름차순
+                )
+            )
 
             items(filteredNotices) { notice ->
                 NoticeItem(
@@ -283,14 +373,14 @@ fun NoticeItem(notice: Notice, isDueToday: Boolean = false, onClick: () -> Unit)
                     Box(
                         modifier = Modifier
                             .background(badgeBg, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(text = notice.categoryTag, fontSize = 11.sp, color = badgeText)
                     }
                     Box(
                         modifier = Modifier
                             .background(ddayBg, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(text = calculateDDay(notice.deadlineAt), fontSize = 11.sp, color = ddayText)
                     }
@@ -305,6 +395,7 @@ fun NoticeItem(notice: Notice, isDueToday: Boolean = false, onClick: () -> Unit)
                 Text(
                     text = notice.source,
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = CatchTextCaption
                 )
             }
@@ -317,12 +408,12 @@ fun DDayBadge(dDay: String, dimmed: Boolean = false) {
     Box(
         modifier = Modifier
             .background(
-                color = if (dimmed) CatchInactive else CatchDeadlineSoon,
+                color = if (dimmed) CatchSecondaryLight else CatchDeadlineSoon,
                 shape = RoundedCornerShape(6.dp)
             )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 6.dp, vertical = 1.dp)
     ) {
-        Text(text = dDay, fontSize = 11.sp, color = if (dimmed) CatchTextCaption else Color.White)
+        Text(text = dDay, fontSize = 11.sp, color = if (dimmed) CatchPrimary else Color.White)
     }
 }
 

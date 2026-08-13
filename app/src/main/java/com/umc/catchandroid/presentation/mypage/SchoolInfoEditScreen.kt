@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -28,19 +30,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umc.catchandroid.R
 import com.umc.catchandroid.ui.theme.CatchInactive
 import com.umc.catchandroid.ui.theme.CatchPrimary
-import com.umc.catchandroid.ui.theme.CatchSecondaryLight
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
+import androidx.compose.ui.graphics.Brush
 
 @Composable
 fun SchoolInfoEditScreen(
@@ -202,26 +208,49 @@ fun SchoolInfoEditScreen(
                     )
                 )
 
+                // 안내 카드 (그라데이션 배경 + 하트 펭귄 일러스트 + 강조 텍스트 + 불릿 리스트)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 24.dp)
-                        .background(color = CatchSecondaryLight, shape = RoundedCornerShape(16.dp))
-                        .padding(16.dp)
+                        .clip(RoundedCornerShape(16.dp))
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg_noti_card),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize()
+                    )
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        modifier = Modifier.padding(20.dp)
+                    ) {
                         Image(
-                            painter = painterResource(id = R.drawable.character2),
+                            painter = painterResource(id = R.drawable.img_penguin_heart),
                             contentDescription = "공지캐치 캐릭터",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.height(56.dp)
+                            modifier = Modifier.height(100.dp)
                         )
-                        Text(
-                            text = "학교 정보를 수정하면 더 정확한 맞춤 공지를 받을 수 있어요!",
-                            fontSize = 13.sp,
-                            color = CatchTextTitle,
-                            modifier = Modifier.padding(start = 12.dp)
-                        )
+                        Column(modifier = Modifier.padding(start = 16.dp)) {
+                            Text(
+                                text = buildAnnotatedString {
+                                    append("학교 정보를 수정하면\n더 정확한 ")
+                                    withStyle(style = SpanStyle(color = CatchPrimary, fontWeight = FontWeight.Bold)) {
+                                        append("맞춤 공지")
+                                    }
+                                    append("를\n받을 수 있어요!")
+                                },
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = CatchTextTitle,
+                                lineHeight = 20.sp
+                            )
+                            Column(modifier = Modifier.padding(top = 12.dp)) {
+                                BulletPoint("학교별 공지 우선 제공")
+                                BulletPoint("학과별 공지 제공")
+                                BulletPoint("학년별 맞춤 정보 제공")
+                            }
+                        }
                     }
                 }
 
@@ -233,10 +262,13 @@ fun SchoolInfoEditScreen(
                         .fillMaxWidth()
                         .padding(bottom = 24.dp, top = 16.dp)
                         .height(56.dp)
-                        .background(color = CatchPrimary, shape = RoundedCornerShape(12.dp))
-                        .clickable {
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4))
+                            ),
+                    shape = RoundedCornerShape(12.dp)
+                )                        .clickable {
                             if (selectedUniversity != null && selectedDepartment != null) {
-                                // 뒤로가기(onBack)가 아니라 저장 완료 신호(onSaved)로 보냄 -> 홈 새로고침 트리거용
                                 viewModel.save(onDone = onSaved)
                             }
                         }
@@ -250,5 +282,25 @@ fun SchoolInfoEditScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BulletPoint(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .background(CatchPrimary, CircleShape)
+        )
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = CatchTextCaption,
+            modifier = Modifier.padding(start = 8.dp)
+        )
     }
 }

@@ -20,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.umc.catchandroid.R
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchTextCaption
+import androidx.compose.ui.graphics.Color
 
 data class BottomNavItem(
     val screen: Screen,
@@ -36,7 +37,7 @@ val bottomNavItems = listOf(
 
 // 아이콘 크기: 바깥 Box와 안쪽 Image 크기를 반드시 동일하게 유지해야 함
 // (부모 Box의 크기 제약이 항상 우선 적용되므로, 안쪽 Image만 키워도 소용없음)
-private val NAV_ICON_SIZE = 48.dp
+private val NAV_ICON_SIZE = 38.dp
 
 @Composable
 fun BottomNavBar(navController: NavController) {
@@ -46,7 +47,7 @@ fun BottomNavBar(navController: NavController) {
     NavigationBar(containerColor = androidx.compose.ui.graphics.Color.White) {
         bottomNavItems.forEach { item ->
             val selected = currentRoute == item.screen.route
-            val tintColor = if (selected) CatchPrimary else CatchTextCaption
+            val tintColor = if (selected) CatchPrimary else Color(0xFFBFBFBF)
 
             NavigationBarItem(
                 selected = selected,

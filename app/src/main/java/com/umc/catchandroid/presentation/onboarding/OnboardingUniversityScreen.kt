@@ -141,12 +141,7 @@ fun OnboardingUniversityScreen(
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
                 .height(56.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(CatchSecondary, CatchPrimary)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
+                .background( brush = Brush.verticalGradient( colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4)) ), shape = RoundedCornerShape(12.dp) )
                 .selectable(selected = false, onClick = {
                     val university = universities.find { it.universityName == selected }
                     selected?.let { viewModel.saveUniversity(it) }

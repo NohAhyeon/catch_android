@@ -25,6 +25,9 @@ import androidx.navigation.navArgument
 import com.umc.catchandroid.data.local.TokenManager
 import com.umc.catchandroid.domain.model.Department
 import com.umc.catchandroid.domain.repository.UserRepository
+import com.umc.catchandroid.presentation.notice.NoticeDetailScreen
+import com.umc.catchandroid.presentation.notice.WebViewScreen
+import com.umc.catchandroid.presentation.notification.NotificationScreen
 import com.umc.catchandroid.presentation.onboarding.DepartmentSearchScreen
 import com.umc.catchandroid.presentation.onboarding.LoginScreen
 import com.umc.catchandroid.presentation.onboarding.OnboardingKeywordScreen
@@ -121,9 +124,12 @@ class SplashViewModel @Inject constructor(
                  * 따라서 null 여부까지 고려해서 온보딩 완료 여부 판단.
                  */
                 val onboardingDone =
-                    !profile.universityName.isNullOrBlank() &&
+                    (!profile.universityName.isNullOrBlank() &&
                             !profile.departmentName.isNullOrBlank() &&
-                            (profile.grade ?: 0) > 0
+                            (profile.grade ?: 0) > 0)
+
+// TODO: 온보딩 화면 테스트용 임시 강제 분기, 테스트 끝나면 이 줄 삭제
+                     //   .let { false }
 
 
                 Log.d(
@@ -224,14 +230,6 @@ fun CatchNavHost(
 
         /*
          * Splash
-         *
-         * 앱 시작 또는 로그인 성공 후 여기로 들어와서
-         *
-         * 1. Token 확인
-         * 2. Profile 조회
-         * 3. 온보딩 완료 여부 확인
-         *
-         * 을 수행한다.
          */
         composable(
             route = Screen.Splash.route,
@@ -250,7 +248,7 @@ fun CatchNavHost(
 
             LaunchedEffect(destination) {
 
-                when (val dest = destination) {
+                when (destination) {
 
                     is SplashDestination.GoHome -> {
 
@@ -271,7 +269,7 @@ fun CatchNavHost(
 
                         navController.navigate(
                             Screen.OnboardingUniversity.createRoute(
-                                dest.provider
+                                (destination as SplashDestination.GoOnboarding).provider
                             )
                         ) {
 
@@ -329,16 +327,6 @@ fun CatchNavHost(
 
                 onLoginSuccess = { provider ->
 
-                    /*
-                     * 로그인 성공했다고 바로 온보딩으로 보내지 않는다.
-                     *
-                     * Splash에서 실제 프로필을 조회한 후
-                     *
-                     * 온보딩 완료 -> Home
-                     * 온보딩 미완료 -> Onboarding
-                     *
-                     * 으로 분기한다.
-                     */
                     navController.navigate(
                         Screen.Splash.createRoute(
                             provider
@@ -399,10 +387,6 @@ fun CatchNavHost(
                     ?: 1L
 
 
-            /*
-             * 학과 검색 화면에서 선택한 값을
-             * 다시 받아오기 위한 상태
-             */
             var selectedDepartment by remember {
                 mutableStateOf<Department?>(null)
             }
@@ -562,10 +546,6 @@ fun CatchNavHost(
                         Screen.Home.route
                     ) {
 
-                        /*
-                         * 온보딩 완료 후 이전 온보딩 화면들을
-                         * 모두 제거한다.
-                         */
                         popUpTo(0)
                     }
                 }
@@ -574,7 +554,7 @@ fun CatchNavHost(
 
 
         /*
-         * 홈
+         * 홈 (하단 탭 있는 화면)
          */
         composable(
             Screen.Home.route
@@ -590,7 +570,68 @@ fun CatchNavHost(
 
                         popUpTo(0)
                     }
+                },
+
+                onNotificationClick = {
+
+                    navController.navigate(
+                        Screen.Notification.route
+                    )
                 }
+            )
+        }
+
+
+        /*
+         * 알림 (하단 탭 없는 전체 화면)
+         */
+        composable(
+            Screen.Notification.route
+        ) {
+
+            NotificationScreen(
+                onBack = { navController.popBackStack() },
+                onNoticeClick = { noticeId: Long ->
+                    navController.navigate(Screen.NoticeDetail.createRoute(noticeId))
+                }
+            )
+        }
+
+
+        /*
+         * 공지 상세 (알림 화면에서 진입할 때를 위해 최상위에도 등록)
+         */
+        composable(
+            Screen.NoticeDetail.route
+        ) { backStackEntry ->
+
+            val noticeId = backStackEntry.arguments
+                ?.getString("noticeId")
+                ?.toLongOrNull() ?: 0L
+
+            NoticeDetailScreen(
+                noticeId = noticeId,
+                onBack = { navController.popBackStack() },
+                onOpenOriginal = { url ->
+                    navController.navigate(Screen.WebView.createRoute(url))
+                }
+            )
+        }
+
+
+        /*
+         * 웹뷰 (원문 보기)
+         */
+        composable(
+            Screen.WebView.route
+        ) { backStackEntry ->
+
+            val encodedUrl = backStackEntry.arguments?.getString("url") ?: ""
+            val url = Screen.WebView.decodeUrl(encodedUrl)
+
+            WebViewScreen(
+                url = url,
+                onBack = { navController.popBackStack() }
             )
         }
     }

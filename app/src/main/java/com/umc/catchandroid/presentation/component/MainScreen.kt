@@ -40,13 +40,13 @@ import com.umc.catchandroid.presentation.mypage.SpecLogScreen
 import com.umc.catchandroid.presentation.mypage.SupportNoticeScreen
 import com.umc.catchandroid.presentation.notice.NoticeDetailScreen
 import com.umc.catchandroid.presentation.notification.NotificationBadgeViewModel
-import com.umc.catchandroid.presentation.notification.NotificationScreen
 import com.umc.catchandroid.presentation.search.SearchScreen
 import com.umc.catchandroid.presentation.notice.WebViewScreen
 
 @Composable
 fun MainScreen(
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onNotificationClick: () -> Unit
 ) {
     val mainNavController = rememberNavController()
     val notificationBadgeViewModel: NotificationBadgeViewModel = hiltViewModel()
@@ -62,7 +62,7 @@ fun MainScreen(
 
     val goToNotification: () -> Unit = {
         notificationBadgeViewModel.clear()
-        mainNavController.navigate(Screen.Notification.route)
+        onNotificationClick()
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -206,14 +206,6 @@ fun MainScreen(
                 }
                 composable(Screen.Scrap.route) {
                     ScrapScreen(
-                        onBack = { mainNavController.popBackStack() },
-                        onNoticeClick = { noticeId ->
-                            mainNavController.navigate(Screen.NoticeDetail.createRoute(noticeId))
-                        }
-                    )
-                }
-                composable(Screen.Notification.route) {
-                    NotificationScreen(
                         onBack = { mainNavController.popBackStack() },
                         onNoticeClick = { noticeId ->
                             mainNavController.navigate(Screen.NoticeDetail.createRoute(noticeId))

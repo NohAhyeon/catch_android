@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -159,65 +160,89 @@ fun NotificationScreen(
             else -> {
                 val grouped = filteredNotifications.groupBy { dateGroupLabel(it.createdAt) }
 
-                LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-                    grouped.forEach { (dateLabel, items) ->
-                        item {
-                            Text(
-                                text = dateLabel,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = CatchTextTitle,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 10.dp)
-                            )
+                // 알림이 있을 때는 화면 우측 하단에 인사하는 펭귄 마스코트를 고정 오버레이로 표시
+                Box(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+                        grouped.forEach { (dateLabel, items) ->
+                            item {
+                                Text(
+                                    text = dateLabel,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = CatchTextTitle,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 10.dp)
+                                )
+                            }
+                            items(items) { notification ->
+                                NotificationItem(
+                                    notification = notification,
+                                    onClick = { onNoticeClick(notification.noticeId) }
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
                         }
-                        items(items) { notification ->
-                            NotificationItem(
-                                notification = notification,
-                                onClick = { onNoticeClick(notification.noticeId) }
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
+
+                        // 이전 알림 더 불러오기 (그라데이션 배경 카드)
+                        if (hasMore) {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .clickable(enabled = !isLoadingMore) { viewModel.loadMore() }
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.bg_noti_card),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.matchParentSize()
+                                    )
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 28.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        if (isLoadingMore) {
+                                            CircularProgressIndicator(
+                                                color = CatchPrimary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        } else {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.img_bell),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                            Text(
+                                                text = "지난 알림을 확인해 보세요",
+                                                fontSize = 13.sp,
+                                                color = CatchTextCaption
+                                            )
+                                            Text(
+                                                text = "이전 알림 보기 >",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = CatchPrimary,
+                                                modifier = Modifier.padding(top = 6.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
                         }
                     }
 
-                    // 이전 알림 더 불러오기
-                    if (hasMore) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = !isLoadingMore) { viewModel.loadMore() },
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = CatchSecondaryLight)
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    if (isLoadingMore) {
-                                        CircularProgressIndicator(
-                                            color = CatchPrimary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    } else {
-                                        Text(
-                                            text = "지난 알림을 확인해 보세요",
-                                            fontSize = 13.sp,
-                                            color = CatchTextCaption
-                                        )
-                                        Text(
-                                            text = "이전 알림 보기 >",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = CatchPrimary,
-                                            modifier = Modifier.padding(top = 6.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(20.dp))
-                        }
-                    }
+                    // 우측 하단 고정 펭귄 마스코트 (알림 목록이 있을 때만 표시)
+                    Image(
+                        painter = painterResource(id = R.drawable.img_penguin),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 12.dp)
+                            .size(150.dp)
+                    )
                 }
             }
         }
@@ -228,14 +253,13 @@ fun NotificationScreen(
 private fun EmptyNotificationState() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // TODO: 디자인 시안의 캐릭터 일러스트로 교체 필요
             Image(
-                painter = painterResource(id = R.drawable.character2),
+                painter = painterResource(id = R.drawable.img_penguin_empty),
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(140.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "새로운 알림이 없어요",
                 fontSize = 16.sp,
@@ -294,12 +318,22 @@ private fun NotificationItem(notification: Notification, onClick: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(badgeBg, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(text = badgeLabel, fontSize = 11.sp, color = badgeTextColor)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (!notification.isRead) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(CatchPrimary, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(badgeBg, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(text = badgeLabel, fontSize = 11.sp, color = badgeTextColor)
+                    }
                 }
                 Text(
                     text = relativeTimeLabel(notification.createdAt),

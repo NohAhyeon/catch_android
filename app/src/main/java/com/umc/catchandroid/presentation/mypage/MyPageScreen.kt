@@ -17,16 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.HelpOutline
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Assignment
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QuestionMark
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
@@ -65,6 +57,10 @@ import com.umc.catchandroid.ui.theme.CatchTextBody
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.BorderStroke
 
 private const val SUPPORT_EMAIL = "wnsrud2002@naver.com"
 
@@ -120,15 +116,21 @@ fun MyPageScreen(
         ) {
             profile?.let { user ->
                 Text(
-                    text = "안녕하세요, ${user.nickname}님!",
-                    fontSize = 16.sp,
+                    text = buildAnnotatedString {
+                        append("안녕하세요, ")
+                        withStyle(style = SpanStyle(color = CatchPrimary)) {
+                            append(user.nickname)
+                        }
+                        append("님!")
+                    },
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = CatchTextTitle
                 )
                 Text(
-                    text = "오늘도 원하는 공지를 놓치지 않도록 도와드릴게요.",
-                    fontSize = 13.sp,
-                    color = CatchTextCaption,
+                    text = "오늘도 원하는 공지를\n놓치지 않도록 도와드릴게요.",
+                    fontSize = 14.sp,
+                    color = CatchTextTitle,
                     modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
                 )
 
@@ -138,20 +140,26 @@ fun MyPageScreen(
                         .fillMaxWidth()
                         .clickable { onSchoolInfoClick() },
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = CatchSecondaryLight)
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, CatchInactive)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.character2),
-                            contentDescription = "프로필 사진",
-                            contentScale = ContentScale.Crop,
+                        Box(
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                        )
+                                .size(56.dp)
+                                .background(CatchSecondaryLight, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.img_penguinmypage),
+                                contentDescription = "프로필 사진",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.size(55.dp)
+                            )
+                        }
                         Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
                             Text(
                                 text = user.nickname,
@@ -163,7 +171,8 @@ fun MyPageScreen(
                                 text = "${user.universityName}\n${user.departmentName} · ${user.grade}학년",
                                 fontSize = 12.sp,
                                 color = CatchTextCaption,
-                                lineHeight = 16.sp
+                                lineHeight = 16.sp,
+                                modifier = Modifier.padding(top = 4.dp)
                             )
                         }
                         Icon(
@@ -204,14 +213,14 @@ fun MyPageScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 메뉴 리스트
-                MenuRow(icon = Icons.Default.Star, label = "스크랩", onClick = onScrapClick)
-                MenuRow(icon = Icons.Default.Assignment, label = "스펙 로그", onClick = onSpecLogClick)
-                MenuRow(icon = Icons.Default.Bookmark, label = "관심 키워드", onClick = onKeywordManageClick)
-                MenuRow(icon = Icons.Default.Notifications, label = "알림 설정", onClick = onNotificationSettingsClick)
-                MenuRow(icon = Icons.Default.School, label = "학교 정보 수정", onClick = onSchoolInfoClick)
-                MenuRow(icon = Icons.Default.Info, label = "공지사항 · FAQ", onClick = onSupportNoticeClick)
-                MenuRow(icon = Icons.Default.HelpOutline, label = "문의하기", onClick = { showContactDialog = true })
+                // 메뉴 리스트 (피그마 디자인 아이콘 적용)
+                MenuRow(iconRes = R.drawable.ic_scrap, label = "스크랩", onClick = onScrapClick)
+                MenuRow(iconRes = R.drawable.ic_speclog, label = "스펙 로그", onClick = onSpecLogClick)
+                MenuRow(iconRes = R.drawable.ic_keyword, label = "관심 키워드", onClick = onKeywordManageClick)
+                MenuRow(iconRes = R.drawable.ic_alarm, label = "알림 설정", onClick = onNotificationSettingsClick)
+                MenuRow(iconRes = R.drawable.ic_school, label = "학교 정보 수정", onClick = onSchoolInfoClick)
+                MenuRow(iconRes = R.drawable.ic_notice_faq, label = "공지사항 · FAQ", onClick = onSupportNoticeClick)
+                MenuRow(iconRes = R.drawable.ic_inquiry, label = "문의하기", onClick = { showContactDialog = true })
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -321,7 +330,7 @@ fun MyPageScreen(
             },
             confirmButton = {
                 Button(
-                    // 목업: 실제 탈퇴 API 연동 전이라 다이얼로그만 닫음
+
                     onClick = { showWithdrawDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE05353))
                 ) {
@@ -370,7 +379,7 @@ private fun StatCard(
 }
 
 @Composable
-private fun MenuRow(icon: ImageVector, label: String, onClick: () -> Unit = {}) {
+private fun MenuRow(iconRes: Int, label: String, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -378,10 +387,9 @@ private fun MenuRow(icon: ImageVector, label: String, onClick: () -> Unit = {}) 
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
+        Image(
+            painter = painterResource(id = iconRes),
             contentDescription = label,
-            tint = CatchPrimary,
             modifier = Modifier.size(22.dp)
         )
         Text(
@@ -408,15 +416,11 @@ private fun ContactDialog(onDismiss: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(CatchSecondaryLight, CircleShape),
-                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.QuestionMark,
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_question),
                         contentDescription = null,
-                        tint = CatchPrimary
+                        modifier = Modifier.size(80.dp) // 원하는 크기로 조정
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))

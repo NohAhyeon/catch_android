@@ -48,6 +48,11 @@ import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
 import java.time.LocalDate
 import java.time.YearMonth
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
+import com.umc.catchandroid.R
+import androidx.compose.ui.graphics.Brush
 
 data class CalendarDay(
     val day: Int,
@@ -215,13 +220,23 @@ fun CalendarScreen(
                 } else {
                     "${yearMonth.monthValue}월 ${selectedDay}일 일정 ${noticesForDate.size}개"
                 }
-                Text(
-                    text = "📅 $title",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = CatchTextTitle,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 10.dp)
-                )
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_calendartoday),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = CatchTextTitle,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
             }
             if (noticesForDate.isEmpty()) {
                 item {
@@ -243,15 +258,25 @@ fun CalendarScreen(
                 }
             }
 
-            // 다가오는 일정
+// 다가오는 일정
             item {
-                Text(
-                    text = "🕐 다가오는 일정 ${upcomingNotices.size}개",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = CatchTextTitle,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 12.dp, bottom = 10.dp)
-                )
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_time),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "다가오는 일정 ${upcomingNotices.size}개",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = CatchTextTitle,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
             }
             if (upcomingNotices.isEmpty()) {
                 item {
@@ -295,7 +320,12 @@ private fun CalendarDayCell(
             modifier = Modifier
                 .size(32.dp)
                 .then(
-                    if (isSelected) Modifier.background(CatchPrimary, CircleShape)
+                    if (isSelected) Modifier.background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF403DE4), Color(0xFF9B98FF))
+                        ),
+                        shape = CircleShape
+                    )
                     else Modifier
                 ),
             contentAlignment = Alignment.Center

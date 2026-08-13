@@ -20,3 +20,5 @@ val CatchBackground = Color(0xFFF7F9FA)
 val CatchDivider = Color(0xFFA2B2FD)
 val CatchInactive = Color(0xFFF0F1F3)
 val CatchDeadlineSoon = Color(0xFFFF5A5F)
+
+val CatchInactiveIcon = Color(0xFFBFBFBF)

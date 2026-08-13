@@ -2,6 +2,7 @@ package com.umc.catchandroid.presentation.onboarding
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -109,104 +111,116 @@ fun LoginScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.height(80.dp))
+        // 배경 (피그마에서 추출한 방사형 그라데이션 벡터)
+        Image(
+            painter = painterResource(id = R.drawable.bg_login),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "공지캐치 로고",
-                modifier = Modifier
-                    .size(120.dp)
-                    .padding(bottom = 20.dp)
-            )
+            Spacer(modifier = Modifier.height(80.dp))
 
-            Text(
-                text = "공지캐치",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF232323)
-            )
-            Text(
-                text = "흩어진 학교 공지를 한 곳에서!",
-                fontSize = 15.sp,
-                color = CatchTextCaption,
-                modifier = Modifier.padding(top = 10.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(180.dp))
-
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-            // 카카오 로그인 버튼 (실제 SDK 연동)
-            Button(
-                onClick = { handleKakaoLogin() },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE812))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_kakao),
-                        contentDescription = "카카오",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "카카오로 시작하기",
-                        color = Color(0xFF232323),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "공지캐치 로고",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .padding(bottom = 20.dp)
+                )
+
+                Text(
+                    text = "공지캐치",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF232323)
+                )
+                Text(
+                    text = "흩어진 학교 공지를 한 곳에서!",
+                    fontSize = 15.sp,
+                    color = CatchTextCaption,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(180.dp))
 
-            // 구글 로그인 버튼 (실제 Credential Manager 연동)
-            OutlinedButton(
-                onClick = { handleGoogleLogin() },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_google),
-                        contentDescription = "구글",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Google로 시작하기",
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+                // 카카오 로그인 버튼 (실제 SDK 연동)
+                Button(
+                    onClick = { handleKakaoLogin() },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE812))
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_kakao),
+                            contentDescription = "카카오",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "카카오로 시작하기",
+                            color = Color(0xFF232323),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // 애플 로그인 버튼 (지원 예정, 임시 Mock)
-            Button(
-                onClick = { onLoginSuccess("apple") },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_apple),
-                        contentDescription = "애플",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Apple로 시작하기",
-                        color = Color.White,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+                // 구글 로그인 버튼 (실제 Credential Manager 연동)
+                OutlinedButton(
+                    onClick = { handleGoogleLogin() },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_google),
+                            contentDescription = "구글",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Google로 시작하기",
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 애플 로그인 버튼 (지원 예정, 임시 Mock)
+                Button(
+                    onClick = { onLoginSuccess("apple") },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_apple),
+                            contentDescription = "애플",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Apple로 시작하기",
+                            color = Color.White,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 }
             }
         }

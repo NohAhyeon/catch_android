@@ -142,7 +142,7 @@ fun OnboardingProfileScreen(
                 .height(56.dp)
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(CatchSecondary, CatchPrimary)
+                        colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4))
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )

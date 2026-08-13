@@ -39,6 +39,7 @@ import com.umc.catchandroid.ui.theme.CatchInactive
 import com.umc.catchandroid.ui.theme.CatchPrimary
 import com.umc.catchandroid.ui.theme.CatchTextCaption
 import com.umc.catchandroid.ui.theme.CatchTextTitle
+import androidx.compose.ui.graphics.Brush
 
 private val recommendedKeywords = listOf("장학금", "비교과", "학사", "취업")
 private const val MAX_KEYWORDS = 5
@@ -173,7 +174,12 @@ fun KeywordManageScreen(
                         .fillMaxWidth()
                         .padding(top = 32.dp)
                         .height(56.dp)
-                        .background(color = CatchPrimary, shape = RoundedCornerShape(12.dp))
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0xFF9B98FF), Color(0xFF403DE4))
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
                         .clickable { viewModel.save(onDone = onBack) }
                 ) {
                     Text(
@@ -207,12 +213,7 @@ private fun KeywordChip(text: String, filled: Boolean, onClick: () -> Unit) {
             .padding(end = 8.dp, bottom = 8.dp)
             .height(40.dp)
             .background(
-                color = if (filled) CatchPrimary else Color.White,
-                shape = RoundedCornerShape(20.dp)
-            )
-            .border(
-                width = if (filled) 0.dp else 1.dp,
-                color = CatchInactive,
+                color = if (filled) CatchPrimary else Color(0xFFE3E8FD),
                 shape = RoundedCornerShape(20.dp)
             )
             .clickable { onClick() }
