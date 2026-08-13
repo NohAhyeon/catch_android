@@ -41,7 +41,6 @@ private val DUMMY_NOTIFICATIONS = listOf(
     )
 )
 
-// "이전 알림 보기"를 눌렀을 때 추가로 보여줄 더미 (마감된/지난) 알림
 private val DUMMY_OLDER_NOTIFICATIONS = listOf(
     Notification(
         notificationId = 4L,
